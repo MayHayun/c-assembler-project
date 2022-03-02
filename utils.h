@@ -12,8 +12,8 @@ typedef struct commandsStruct{
     int opcode;
     int funct;
     int numOfParam;
-    *char sourceAble[10];
-    *char destAble[10];
+    **char sourceAble; /* legit source functions */
+    **char destAble;   /* legit destination functions */
 
 
 }commandStruct;
