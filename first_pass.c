@@ -10,17 +10,24 @@ void first_pass(FILE *filePointer, string fileName, int fileLength)
     char line[82];
     char *word;
     int inmacro = 0, i = 0, j = 0, macroCounter = 0, linesInMacro = 1;
+    
     FILE *obFile = fopen(strcat(fileName.data, ".ob"), 'w');
     macroDetails = calloc(7 * (fileLength/2) ,sizeof(char *));
+    
     while (fgets(line, 82, filePointer))
     {
         if(line[i] == '}')
             i++;
+        
         i = move_to_none_white(line, i);
+        
         for(; !isspace(line[i]); j++, i++)
                 word[j] = line[i];
+        
+        /* check if we are not inside a macro at the moment */
         if(!inmacro)
         {
+            /* finding where the macro starts */
             if (!strcmp(word, "macro"))
             {
                 inmacro = 1;
@@ -30,17 +37,23 @@ void first_pass(FILE *filePointer, string fileName, int fileLength)
                     word[j] = line[i];
                 *(macroDetails + macroCounter) = word;
             }
+            
             else
                 fputs(line, obFile);
-        } else
+        } 
+        
+        else 
         {
+            /* finding where the macro ends */
             if (!strcmp(word, "endm"))
             {
                 inmacro = 0;
                 macroCounter++;
                 break;
             }
-            else{
+            
+            /* adding a command that is inside the current macro */
+            else {
                 *(macroDetails + macroCounter +(linesInMacro * (fileLength/2))) = line;
                 linesInMacro++;
             }
