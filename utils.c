@@ -5,7 +5,7 @@
 #include "utils.h"
 
 
-
+/* func to skip all white chars */
 int move_to_none_white(char *line, int i)
 {
     for(; i < strlen(line); i++)
