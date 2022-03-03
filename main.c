@@ -21,10 +21,11 @@ int main(int argc, char *argv[]){
 
     int i, j;
     int duplicateExists = 0;
+    int errorCount = 0;
     char fileName[FILE_NAME_MAX_SIZE];
 
     if ( argc == 1 ){
-        printf("No files were given for the program...");
+        printf("No files were given for the program...\n");
         exit(0);
     }
     
@@ -40,12 +41,16 @@ int main(int argc, char *argv[]){
         if( !duplicateExists ){
             if( fileEndingValid(fileName) ){
                 
+                errorCount += FirstPass(fileName) @@@@@@@@@@@@@@@@@@@@@@
                 DO THE BIG BAD THING OF THE WHOLE THING
             }
             else{
-                printf("The ending of the file needs to be \".as\"  ...");
+                printf("The ending of the file needs to be \".as\"  ...\n");
             }
         }
-
     }
+    if( !errorCount > 0 )
+        printf("Compilation failed due to %d errors...", errorCount);
+
+    return errorCount;
 }
