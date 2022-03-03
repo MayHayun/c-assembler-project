@@ -55,7 +55,6 @@ void first_pass(FILE *filePointer, string fileName, int fileLength)
             {
                 inmacro = 0;
                 macroCounter++;
-                break;
             }
             
             /* adding a command that is inside the current macro */
