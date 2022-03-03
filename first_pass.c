@@ -2,19 +2,25 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "utils.h"
+
+#include "utils.c"
+
+#define LINE_LENGTH 81
 
 void first_pass(FILE *filePointer, string fileName, int fileLength)
 {
+    /* receives assembly source code file name and checks for any errors,
+    if none were found then it will..... @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/ 
+    
     char **macroDetails;
-    char line[82];
+    char line[LINE_LENGTH];
     char *word;
     int inmacro = 0, i = 0, j = 0, macroCounter = 0, linesInMacro = 1;
     
     FILE *obFile = fopen(strcat(fileName.data, ".ob"), 'w');
     macroDetails = calloc(7 * (fileLength/2) ,sizeof(char *));
     
-    while (fgets(line, 82, filePointer))
+    while (fgets(line, LINE_LENGTH, filePointer))
     {
         if(line[i] == '}')
             i++;
@@ -75,5 +81,4 @@ void first_pass(FILE *filePointer, string fileName, int fileLength)
         }
     }
 }
-
 
