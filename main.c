@@ -50,7 +50,7 @@ int main(int argc, char *argv[]){
         }
     }
     if( !errorCount > 0 )
-        printf("Compilation failed due to %d errors...", errorCount);
+        printf("Compilation failed due to %d errors...\n", errorCount);
 
     return errorCount;
 }
