@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #define COMMAND_MAX_LENGTH 31
+#define MAX_LINE_LENGTH 81
 
 
 typedef struct string{
@@ -24,4 +25,19 @@ typedef struct commandData{
     int bytes;
 }commandData;
 
+
 int move_to_none_white(char line[], int i);
+int skip(char line[]);
+MACRO *push(char *macroName, char *macroCommands[], int numOfCommands);
+
+
+typedef struct MACRO
+{
+    char * macroName;
+    char * macroCommands[6];
+    int numOfCommands;
+    struct MACRO *next; 
+}MACRO;
+
+
+struct MACRO *head = NULL;
