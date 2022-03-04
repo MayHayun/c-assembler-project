@@ -22,62 +22,65 @@ void first_pass(FILE *filePointer, string fileName, int fileLength)
     
     while (fgets(line, LINE_LENGTH, filePointer))
     {
-        if(line[i] == '}')
-            i++;
-        
-        i = move_to_none_white(line, i);
-        
-        for(; !isspace(line[i]); j++, i++)
-                word[j] = line[i];
-        
-        /* check if we are not inside a macro at the moment */
-        if(!inmacro)
+        if(!ignore(line))
         {
-            /* finding where the macro starts */
-            if (!strcmp(word, "macro"))
+            if(line[i] == '}')
+                i++;
+        
+            i = move_to_none_white(line, i);
+        
+            for(; !isspace(line[i]); j++, i++)
+                 word[j] = line[i];
+        
+            /* check if we are not inside a macro at the moment */
+            if(!inmacro)
             {
-                inmacro = 1;
-                i = move_to_none_white(line, ++i);
-                free(word);
-                for(j = 0; !isspace(line[i]); i++, j++)
-                    word[j] = line[i];
-                *(macroDetails + macroCounter) = word;
-            }
+                /* finding where the macro starts */
+                if (!strcmp(word, "macro"))
+                {
+                    inmacro = 1;
+                    i = move_to_none_white(line, ++i);
+                    strcpy(word, '\0');
+                    for(j = 0; !isspace(line[i]); i++, j++)
+                        word[j] = line[i];
+                    strcpy(*(macroDetails + macroCounter), word);
+                }
             
-            else
-                fputs(line, obFile);
-        } 
+                else
+                    fputs(line, obFile);
+            } 
         
-        else 
-        {
-            /* finding where the macro ends */
-            if (!strcmp(word, "endm"))
+            else 
             {
-                inmacro = 0;
-                macroCounter++;
-            }
+                /* finding where the macro ends */
+                if (!strcmp(word, "endm"))
+                {
+                    inmacro = 0;
+                    macroCounter++;
+                }
             
-            /* adding a command that is inside the current macro */
-            else {
-                *(macroDetails + macroCounter +(linesInMacro * (fileLength/2))) = line;
-                linesInMacro++;
+                /* adding a command that is inside the current macro */
+                else {
+                    strcpy(*(macroDetails + macroCounter +(linesInMacro * (fileLength/2))), line);
+                    linesInMacro++;
+                }
             }
-        }
-        free(word);
-    }
-    i = 0;
-    while(*(macroDetails + i) != '\0')
-    {
-        int k = 0, l = 0;
-        for(; k < fileLength; k++)
-        {
-            l = move_to_none_white(line, l);
-            while(line[l] != '\n')
-            {
-                for(j = 0; !isspace(line[l]); j++, l++)
-                    word[j] = line[l];
-            }
+            strcpy(word, '\0');
         }
     }
 }
 
+
+int ignore(char line[])
+{
+    int i = 0;
+    i = move_to_none_white(line, i);
+    if(line[i] == ':' || line[i] == '\n')
+        return 1;
+    return 0;
+}
+
+int macro(char ** macro_details, char * word)
+{
+    int i = 0;
+}
