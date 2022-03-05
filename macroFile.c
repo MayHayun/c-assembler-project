@@ -67,6 +67,7 @@ MACRO* find(MACRO *head, char * macroName) {
    return current;
 }
 
+/* extract a word from a given index in a given line */
 int getWord(char *word, char line[], int i){
     int j;
     for(j = 0; !isspace(line[i]) && line[i] != '\n'; j++){
