@@ -1,6 +1,6 @@
-:file ps.as
+;file ps.as
 .entry LIST
-,extern W
+.extern W
 
 MAIN:       add     r3, LIST
 LOOP:       prn     #48
