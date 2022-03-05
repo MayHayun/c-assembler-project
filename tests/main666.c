@@ -69,10 +69,10 @@ void preProcessing(FILE *fileName, char *nameOfFile){
     char macro[] = "macro\0";
     MACRO *head = NULL;
     MACRO *macroFound;
-    char *macroName =NULL;
+    char macroName[30];
     char *macroCommands[6];
     int inMacro = 0;
-    int i, j, linesInMacro = 0;
+    int i = 0, j, linesInMacro = 0;
 
     FILE *objectFile = fopen(strcat(nameOfFile, ".ob"), "w");
     while (fgets(line, MAX_LINE_LENGTH, fileName))
@@ -85,12 +85,13 @@ void preProcessing(FILE *fileName, char *nameOfFile){
             if(inMacro == 0){
                 printf("\ntoken is:%s@", token);
                 printf("\nmacro is:%s@", macro);
-                if(!strcmp(macro, token))
-                {
+
+                if( !strcmp(macro, token) ){
                     printf("\nCCCC");
                     inMacro = 1;
                     token = strtok(NULL, CUT);
                     strcpy(macroName ,token);
+		    
                     printf("token is:%s", token);
                 } else{
                     printf("\nKKKKKKK");
@@ -109,12 +110,13 @@ void preProcessing(FILE *fileName, char *nameOfFile){
                 printf("\n\naaaaaaaa\n");
                 if (!strcmp(token, "endm"))
                 {
-                    head = push(macroName, macroCommands, linesInMacro);
+		    printf("\n\njesus");
+                    /*head = push(macroName, macroCommands, linesInMacro);*/
                     inMacro = 0;
                     linesInMacro = 0;
                 } else{
-                    strcpy(macroCommands[linesInMacro], line);
-                    linesInMacro++;
+                    /*strcpy(macroCommands[linesInMacro], line);
+                    linesInMacro++;*/
                 }
             }
         }
