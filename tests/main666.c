@@ -24,7 +24,7 @@ int skip(char line[]);
 void preProcessing(FILE *fileName, char *nameOfFile);
 MACRO* find(MACRO *head, char * macroName);
 /*char * getWord(char *word, char line[], int i);*/
-MACRO *push(char *macroName, char *macroCommands[], int numOfCommands);
+MACRO *push(char macroName[], char macroCommands[][81], int numOfCommands, MACRO *head);
 
 
 
@@ -47,11 +47,11 @@ MACRO *push(char *macroName, char *macroCommands[], int numOfCommands);
      return 0;
  }
 
- MACRO *push(char *macroName, char *macroCommands[], int numOfCommands){
+ MACRO *push(char macroName[], char macroCommands[][81], int numOfCommands, MACRO *head){
      int i = 0;
-     struct MACRO *link = (struct MACRO*) malloc(sizeof(struct MACRO));
+     MACRO *link;
      strcpy(link->macroName, macroName);
-     for(; i < 6; i++){
+     for(; i < numOfCommands; i++){
          strcpy(link->macroCommands[i], macroCommands[i]);
      }
      link->numOfCommands = numOfCommands;
@@ -70,7 +70,7 @@ void preProcessing(FILE *fileName, char *nameOfFile){
     MACRO *head = NULL;
     MACRO *macroFound;
     char macroName[30];
-    char *macroCommands[6];
+    char macroCommands[6][81];
     int inMacro = 0;
     int i = 0, j, linesInMacro = 0;
 
@@ -111,12 +111,12 @@ void preProcessing(FILE *fileName, char *nameOfFile){
                 if (!strcmp(token, "endm"))
                 {
 		    printf("\n\njesus");
-                    /*head = push(macroName, macroCommands, linesInMacro);*/
+                    head = push(macroName, macroCommands, linesInMacro, head);
                     inMacro = 0;
                     linesInMacro = 0;
                 } else{
-                    /*strcpy(macroCommands[linesInMacro], line);
-                    linesInMacro++;*/
+                    strcpy(macroCommands[linesInMacro], line);
+                    linesInMacro++;
                 }
             }
         }
