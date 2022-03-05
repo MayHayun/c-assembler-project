@@ -43,3 +43,26 @@ int move_to_none_white(char *line, int i)
     }
     return i;
 }
+
+
+int skip(char line[])
+{
+    int i = 0;
+    i = move_to_none_white(line, i);
+    if(line[i] == ':' || line[i] == '\n')
+        return 1;
+    return 0;
+}
+
+MACRO *push(char *macroName, char *macroCommands[], int numOfCommands){
+    int i = 0;
+    struct MACRO *link = (struct MACRO*) malloc(sizeof(struct MACRO));
+    strcpy(link->macroName, macroName);
+    for(; i < 6; i++){
+        strcpy(link->macroCommands[i], macroCommands[i]);
+    }
+    link->numOfCommands = numOfCommands;
+    link->next = head;
+    head = link;
+    return head;
+}
