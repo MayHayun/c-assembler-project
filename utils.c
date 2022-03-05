@@ -49,7 +49,7 @@ int skip(char line[])
 {
     int i = 0;
     i = move_to_none_white(line, i);
-    if(line[i] == ':' || line[i] == '\n')
+    if(line[i] == ';' || line[i] == '\n')
         return 1;
     return 0;
 }
