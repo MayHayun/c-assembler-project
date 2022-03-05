@@ -52,7 +52,7 @@ void preProcessing(FILE *fileName, char *nameOfFile){
     }  
 }
 
-
+/* find a macro with the wanted macrp name */
 MACRO* find(MACRO *head, char * macroName) {
     MACRO* current = head;
     if(head == NULL)
