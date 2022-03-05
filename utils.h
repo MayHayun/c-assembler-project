@@ -26,19 +26,20 @@ typedef struct commandData{
     int bytes;
 }commandData;
 
-
-int move_to_none_white(char line[], int i);
-int skip(char line[]);
-MACRO *push(char *macroName, char *macroCommands[], int numOfCommands);
-
-
 typedef struct MACRO
 {
     char * macroName;
-    char * macroCommands[MAX_COMMANDS_IN_MACRO];
+    char * macroCommands[6];
     int numOfCommands;
     struct MACRO *next; 
 }MACRO;
 
 
 struct MACRO *head = NULL;
+int move_to_none_white(char line[], int i);
+int skip(char line[]);
+void preProcessing(FILE *fileName, char *nameOfFile);
+MACRO* find(MACRO *head, char * macroName);
+int getWord(char *word, char line[], int i);
+MACRO *push(char *macroName, char *macroCommands[], int numOfCommands);
+
