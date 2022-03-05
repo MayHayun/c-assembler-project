@@ -5,17 +5,17 @@
 
 #include "utils.h" 
 
-void preProcessing(FILE *fileName){
+void preProcessing(FILE *fileName, char *nameOfFile){
     char line[MAX_LINE_LENGTH];
     MACRO *head;
     MACRO *macroFound;
-    char *word;
-    char *macroName;
+    char *word = NULL;
+    char *macroName =NULL;
     char *macroCommands[6];
     int inMacro = 0;
     int i, j, linesInMacro = 0;
 
-    FILE *objectFile = fopen(strcat(fileName, ".ob"), 'w');
+    FILE *objectFile = fopen(strcat(nameOfFile, ".ob"), "w");
 
     while (fgets(line, MAX_LINE_LENGTH, fileName))
     {
@@ -25,13 +25,14 @@ void preProcessing(FILE *fileName){
                 if(!strcmp(word, "macro"))
                 {
                     inMacro = 1;
-                    strcpy(macroName ,getWord(word, line, i));
+                    getWord(word, line, i);
+                    strcpy(macroName ,word);
                 } else{
                     macroFound = find(head, macroName);
-                    if(*macroFound != NULL){
-                        for(j = 0; j < macroFound.numOfCommands; j++)
+                    if(macroFound != NULL){
+                        for(j = 0; j < macroFound->numOfCommands; j++)
                         {
-                            fputs(macroFound.macroCommands[j], objectFile);
+                            fputs(macroFound->macroCommands[j], objectFile);
                         }
                     }else
                         fputs(line, objectFile);
