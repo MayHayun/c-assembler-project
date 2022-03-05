@@ -3,6 +3,7 @@
 
 #define COMMAND_MAX_LENGTH 31
 #define MAX_LINE_LENGTH 81
+#define MAX_COMMANDS_IN_MACRO 6
 
 
 typedef struct string{
@@ -34,7 +35,7 @@ MACRO *push(char *macroName, char *macroCommands[], int numOfCommands);
 typedef struct MACRO
 {
     char * macroName;
-    char * macroCommands[6];
+    char * macroCommands[MAX_COMMANDS_IN_MACRO];
     int numOfCommands;
     struct MACRO *next; 
 }MACRO;
