@@ -5,11 +5,6 @@
 #define MAX_LINE_LENGTH 81
 #define MAX_COMMANDS_IN_MACRO 6
 
-
-typedef struct string{
-    char *data;
-}string;
-
 typedef struct commandsStruct{
     char commandName[COMMAND_MAX_LENGTH];
     int opcode;
