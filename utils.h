@@ -38,3 +38,8 @@ MACRO* find(MACRO *head, char * macroName);
 int getWord(char *word, char line[], int i);
 MACRO *push(char *macroName, char *macroCommands[], int numOfCommands);
 
+int isNameOk(char line []);
+int isARegister(char []);
+int isACommand(char []);
+int isANaturalNum(char);
+
