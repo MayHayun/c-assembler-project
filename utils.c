@@ -66,3 +66,96 @@ MACRO *push(char *macroName, char *macroCommands[], int numOfCommands){
     head = link;
     return head;
 }
+
+int isANaturalNum(char c){
+  if(c <= '9' && c>= '0'){
+    return 1;
+  }
+  return 0;
+}
+
+int isACommand(char line []){
+  if(!strcmp(line,"mov"))
+    return 1;
+  if(!strcmp(line,"cmp"))
+    return 1;
+  if(!strcmp(line,"add"))
+    return 1;
+  if(!strcmp(line,"sub"))
+    return 1;
+  if(!strcmp(line,"lea"))
+    return 1;  
+  if(!strcmp(line,"clr"))
+    return 1;
+  if(!strcmp(line,"not"))
+    return 1;
+  if(!strcmp(line,"inc"))
+    return 1;
+  if(!strcmp(line,"dec"))
+    return 1;
+  if(!strcmp(line,"jmp"))
+    return 1;
+  if(!strcmp(line,"bne"))
+    return 1;  
+  if(!strcmp(line,"jsr"))
+    return 1;
+  if(!strcmp(line,"red"))
+    return 1;
+  if(!strcmp(line,"prn"))
+    return 1;
+  if(!strcmp(line,"rts"))
+    return 1;
+  if(!strcmp(line,"stop"))
+    return 1;
+  return 0;
+}
+
+int isARegister(char line []){
+  if(!strcmp(line,"r0"))
+    return 1;  
+  if(!strcmp(line,"r1"))
+    return 1;
+  if(!strcmp(line,"r2"))
+    return 1;  
+  if(!strcmp(line,"r3"))
+    return 1;
+  if(!strcmp(line,"r4"))
+    return 1;  
+  if(!strcmp(line,"r5"))
+    return 1;
+  if(!strcmp(line,"r6"))
+    return 1;  
+  if(!strcmp(line,"r7"))
+    return 1;
+  if(!strcmp(line,"r8"))
+    return 1;  
+  if(!strcmp(line,"r9"))
+    return 1;
+  if(!strcmp(line,"r10"))
+    return 1;  
+  if(!strcmp(line,"r11"))
+    return 1;
+  if(!strcmp(line,"r12"))
+    return 1;  
+  if(!strcmp(line,"r13"))
+    return 1;
+  if(!strcmp(line,"r14"))
+    return 1;  
+  if(!strcmp(line,"r15"))
+    return 1;
+  return 0;
+}
+
+int isNameOk(char line []){
+  int i = 0;
+  if(!isalpha(line[i]) || isARegister(line) || isACommand(line)){
+    return 0;
+  }
+  while(line[i] != '\0'){
+    if(!isalpha(line[i]) && !isANaturalNum(line[i])){
+      return 0;
+    }
+    i++;
+  }
+  return 1;
+}
