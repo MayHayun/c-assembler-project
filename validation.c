@@ -24,16 +24,11 @@ int validNames(FILE *fileName, char *nameOfFile){
       if( !strcmp(token, "macro") ){
         token = strtok(NULL, parse);
         if(isNameOk(token)){
-          printf("\n%s@ is a legit macro name", token);
+          /*printf("\n%s@ is a legit macro name", token);*/
         }
         else{
           printf("\nin line %d: %s is invalid name for a macro..." , i, token);
         }
-      }
-
-      /* regular label */
-      if( token[strlen(token-1)] ==  ':'){
-        printf("\nlabel found!");
       }
 
       /* extern */
@@ -58,7 +53,15 @@ int validNames(FILE *fileName, char *nameOfFile){
         }
       }
       /* label declaration */
-      
+      if(token[strlen(token)-1] == ':'){
+        token[strlen(token)-1] = '\0';
+        if(isNameOk(token)){
+          printf("\n%s@ is a legit declaration label name", token);
+        }
+        else{
+          printf("\nin line %d: %s is invalid name for a declaration label..." , i, token);
+        }
+      }
     }
   }
   return 1;
