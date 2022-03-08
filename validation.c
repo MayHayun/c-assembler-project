@@ -1,11 +1,14 @@
-#include "validation.h"
-#include "utils.h"
-#include "list.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
+#include "utils.h"
+#include "list.h"
+#include "validation.h"
+
+/* this function is the first pass that parses the
+words and filter the special words words */
 LIST *validNames(FILE *fileName, char *nameOfFile){
   char line[MAX_LINE_LENGTH];
   char lineCopy[MAX_LINE_LENGTH];
@@ -46,12 +49,94 @@ LIST *validNames(FILE *fileName, char *nameOfFile){
   return names;
 }
 
+/* get the valid macros and labels and check if the sentence is valid */
+void validation(FILE *fileName, LIST *names ){
+  int i = 0;
+  char line[MAX_LINE_LENGTH];
+  char lineCopy[MAX_LINE_LENGTH];
+  char *token;
+  /*
+  while (fgets(line, MAX_LINE_LENGTH, fileName)){
+    strcpy(lineCopy, line);
+    
+    if(!skip(line)){
+      token = strtok(lineCopy, parse);
+
+      if( !strcmp(token, "macro") && isCurNumOfWords(line,2)){
+        token = strtok(NULL, parse); 
+      }
+
+      if( !strcmp(token, ".extern") && isCurNumOfWords(line,2)){
+        token = strtok(NULL, parse);
+      }
+
+      if( !strcmp(token, ".entry") && isCurNumOfWords(line,2)){
+        token = strtok(NULL, parse);
+      }
+
+      if(token[strlen(token)-1] == ':'){
+        token[strlen(token)-1] = '\0';
+      }
+    }
+  }
+  */
+}
+/* func to decide which delivery it is
+   the given string is after move to none white!*/
+int whichDelivery(char myStr[], LIST *names){
+  char *temp;
+  char *tempRegister;
+  
+  /* Delivery 0 */
+  if( str[0] == '#' && isIntNum(myStr + 1)){
+    return 0;
+  }
+  /* Delivery 1 */
+  if(isAGuidance(str)){
+    return 1;
+  }
+  /* Delivery2 */
+  temp = strtok(myStr,'[');
+  te
+  /* need to update temp and tempRegister */
+  if(has(names,temp) && regTenToFifthTeen(tempRegister)){
+    return 2;
+  }
+  /* Delivery 3 */
+  if(isARegister(str)){
+    return 3;
+  }
+
+  else
+    return -1;
+}
+
+
+
+  int regTenToFifthTeen(char reg []){
+    if(!strcmp(reg,"[r10]"))
+      return 1;
+    if(!strcmp(reg,"[r11]"))
+      return 1;
+    if(!strcmp(reg,"[r12]"))
+      return 1;
+    if(!strcmp(reg,"[r13]"))
+      return 1;
+    if(!strcmp(reg,"[r14]"))
+      return 1;
+    if(!strcmp(reg,"[r15]"))
+      return 1;
+    return 0;
+  }
+
+
+
 int isAGuidance(char line []){
   LIST *l = newList();
   insert(l,".data");
   insert(l,".string");
-  insert(l,".entry");
-  insert(l,".extern");
+//insert(l,".entry");
+//  insert(l,".extern");
   return has(l,line);
 }
   
@@ -68,6 +153,10 @@ int isACommentOrEmpty(char line []){
   return 1;
 }
 
+/* as easy as it sounds */
+char* getRidOfFirstChar(char myStr[]){
+  return myStr + 1;
+}
 
 int isACommand(char line []){
   LIST *l = newList();
@@ -197,3 +286,5 @@ int isCurNumOfWords(char line[], int a){
   }
   return 0;
 }
+
+
