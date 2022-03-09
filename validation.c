@@ -53,7 +53,7 @@ int validation(FILE *fileName, LIST *names){
         }
       }
       /* extern */
-      if( wordNumber == 1 && !strcmp(token,"extern") && isCurNumOfWords( line, 2) == 1 ){
+      if( wordNumber == 1 && !strcmp(token,".extern") && isCurNumOfWords( line, 2) == 1 ){
         token = strtok(NULL, parse_words);
         wordNumber++;
         if(wordNumber == 2 && checkForExternAtSecond(names, token, lineNumber) == 0 ){
@@ -62,14 +62,60 @@ int validation(FILE *fileName, LIST *names){
       }
 
       /* entry */
+      if( wordNumber == 1 && !strcmp(token,".entry") && isCurNumOfWords( line, 2) == 1 ){
+        token = strtok(NULL, parse_words);
+        wordNumber++;
+        if(wordNumber == 2 && checkForEntryAtSecond(names, token, lineNumber) == 0 ){
+          result = 0;
+        }
+      }
+
+      /* .data */
+      if( !strcmp(token,".data")){
+        
+        /* isValidData */
+        
+      }
+
+      /* .string */
+      if( !strcmp(token,".string")){
+        token = strtok(NULL, "\"");
+        wordNumber++;
+        if( token != NULL ){
+          token = strtok(NULL, "\"");
+            if( token == NULL )
+              printf("end of string\n");
+
+        }
+        /* isValidString */
+      }
+      
     }
   }
-
   
   return result;
 }
 
-
+/* didn't test it yet */
+int isValidString(char myStr[]){
+  int i = 0;
+  if(myStr[i] == '\0' && myStr[i] != '"'){ /* why not || */
+    return 0;
+  }
+  int countColons = 1;
+  while(myStr[i] != '/0'){
+    if(myStr[i] == '""'){
+      countColons++;
+    }
+    if(countColons > 2){
+      return 0;
+    }
+    i++;
+  }
+  if(myStr[i-1] == '"'){
+    return 1;
+  }
+}
 /* this function is the first pass that parses the
 words and filter the special words words */
 
@@ -150,8 +196,19 @@ int checkForExternAtSecond( LIST *names, char token[], int lineNumber ){
       return 1;
     }
   }
-    printf("inside checkFor-Macro-AtBegining :( \n");
-    printf("invalid macro in line: %d \n", lineNumber );
+    printf("inside checkFor-extern-AtBegining :( \n");
+    printf("invalid extern in line: %d \n", lineNumber );
+  return 0;
+}
+
+int checkForEntryAtSecond( LIST *names, char token[], int lineNumber ){
+    if( has(names, token) ){
+    if( getNode(names, token)->ent != 0 ){
+      return 1;
+    }
+  }
+    printf("inside checkFor-entry-AtBegining :( \n");
+    printf("invalid entry in line: %d \n", lineNumber );
   return 0;
 }
 
