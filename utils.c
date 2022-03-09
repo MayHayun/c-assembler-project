@@ -159,3 +159,29 @@ int isNameOk(char line []){
   }
   return 1;
 }
+
+commandsStruct *findCommand(char * command)
+{
+    int i = 0;
+    for(; i < 17; i++)
+    {
+        if(!strcmp(command, ourCommands[i]->commandName))
+        return ourCommands[i];
+    }
+    return NULL;
+}
+
+int isLableDec(char *lable)
+{
+    if(lable[strlen(lable)-1] == ':')
+        return 1;
+    return 0;
+}
+
+int isANum(char *param)
+
+{
+    if(param[0] == '#')
+        return 1;
+    return 0;
+}
