@@ -110,12 +110,13 @@ int whichDelivery(char myStr[], LIST *names){
   
   /* Delivery 2 */
   strcpy(tempLine, myStr);
-    
   token = strtok(tempLine, parse_delivery);
   strcpy( tempLabel, token );
   printf("\nlabel->%s", tempLabel);
  
   token = strtok(NULL, parse_delivery);
+  if(token == NULL)
+    return -1;
   strcpy( tempRegister, token );
   printf("\nregister->%s", tempRegister);
 
@@ -137,23 +138,21 @@ int whichDelivery(char myStr[], LIST *names){
 
 
 
-  int regTenToFifthTeen(char reg[]){
-    if(!strcmp(reg,"[r10]"))
-      return 1;
-    if(!strcmp(reg,"[r11]"))
-      return 1;
-    if(!strcmp(reg,"[r12]"))
-      return 1;
-    if(!strcmp(reg,"[r13]"))
-      return 1;
-    if(!strcmp(reg,"[r14]"))
-      return 1;
-    if(!strcmp(reg,"[r15]"))
-      return 1;
-    return 0;
-  }
-
-
+int regTenToFifthTeen(char reg[]){
+  if(!strcmp(reg,"[r10]"))
+    return 1;
+  if(!strcmp(reg,"[r11]"))
+    return 1;
+  if(!strcmp(reg,"[r12]"))
+    return 1;
+  if(!strcmp(reg,"[r13]"))
+    return 1;
+  if(!strcmp(reg,"[r14]"))
+    return 1;
+  if(!strcmp(reg,"[r15]"))
+    return 1;
+  return 0;
+}
 
 int isAGuidance(char line []){
   LIST *l = newList();
