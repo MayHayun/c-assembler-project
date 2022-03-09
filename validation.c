@@ -23,13 +23,18 @@ int validation(FILE *fileName, LIST *names){
   while (fgets(line, MAX_LINE_LENGTH, fileName)){
     lineNumber++;
     strcpy(lineCopy, line);
-    token = strtok(lineCopy, parse_words);
     
     /* the limit of 200 lines is for the makinng of the code */
     /* for every word */
     while( token != NULL && lineNumber <= 200 ){
-      wordNumber++;
       
+      if( lineNumber == 0 )
+        token = strtok(lineCopy, parse_words);
+      else
+        token = strtok(NULL, parse_words);
+      
+      wordNumber++;
+      /* Label Declaration */
       if( wordNumber == 1 && checkForLabelAtBegining(names, token, lineNumber) == 0 ){
         result = 0;
       }
@@ -38,13 +43,32 @@ int validation(FILE *fileName, LIST *names){
         check commands
       }
       */
-      if( wordNumber == 1 && !strcmp(token,"macro") ){
-        token = strtok(NULL, parse_words);
-        checkForMacroAtBegining( LIST *names, char token[], int lineNumber )
+
+      if(  ){
+        printf("line is too long for macro\ extern\ entry \n");
+        break;
       }
       
-      
-      token = strtok(NULL, parse_words);
+      /* macro */
+      if( wordNumber == 1 && !strcmp(token,"macro") && isCurNumOfWords( line, 2) == 1 ){
+        token = strtok(NULL, parse_words);
+        wordNumber++;
+        if(wordNumber == 2 && checkForMacroAtSecond(names, token, lineNumber) == 0 ){
+          result = 0;
+        }
+      }
+      /* extern */
+      if( wordNumber == 1 && !strcmp(token,"extern") ){
+        token = strtok(NULL, parse_words);
+        wordNumber++;
+        if(wordNumber == 2 && checkForExternAtSecond(names, token, lineNumber) == 0 ){
+          result = 0;
+        }
+      }
+
+
+
+      /* entry */
     }
   }
 
@@ -114,7 +138,7 @@ int checkForLabelAtBegining( LIST *names, char token[], int lineNumber ){
   return 0;
 }
 
-int checkForMacroAtBegining( LIST *names, char token[], int lineNumber ){
+int checkForMacroAtSecond( LIST *names, char token[], int lineNumber ){
 
   if( has(names, token) ){
     if( getNode(names, token)->mac == 1 ){
@@ -126,6 +150,8 @@ int checkForMacroAtBegining( LIST *names, char token[], int lineNumber ){
     printf("invalid macro in line: %d \n", lineNumber );
   return 0;
 }
+
+int checkForExternAtSecond
 
 /* func to decide which delivery it is
    the given string is after move to none white!*/
