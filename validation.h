@@ -1,12 +1,13 @@
 #ifndef _validation_H_
 #define _validation_H_
 
-#include "utils.h"
-#include "list.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+
+#include "utils.h"
+#include "list.h"
 
 #define parse " \t\n"
 int whichDelivery(char myStr[], LIST *names);
@@ -24,5 +25,9 @@ void insertEx(char [], LIST*);
 void insertEn(char [], LIST*);
 void insertLD(char [], LIST*);
 int regTenToFifthTeen(char reg []);
-
+int checkForLabelAtBegining( LIST *names, char token[], int lineNumber);
+int checkForMacroAtSecond( LIST *names, char token[], int lineNumber );
+int checkForExternAtSecond( LIST *names, char token[], int lineNumber );
+int checkForEntryAtSecond( LIST *names, char token[], int lineNumber );
+int isValidString(char myStr []);
 #endif
