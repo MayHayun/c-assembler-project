@@ -63,6 +63,9 @@ int isNameOk(char line []);
 int isARegister(char []);
 int isACommand(char []);
 int isANaturalNum(char);
+int giveTheLastNoneWhiteIndex(char line[]);
+int countWords(char line []);
+
 
 symbolLink * symboleTableCreat(FILE *filePointer);
 symbolLink *pushLable(symbolLink *head, char lableName[]);
