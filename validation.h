@@ -9,7 +9,7 @@
 #include <ctype.h>
 
 #define parse " \t\n"
-
+int whichDelivery(char myStr[], LIST *names);
 int isCurNumOfWords(char buffer[], int a);
 int isARegister(char []);
 int isACommand(char []);
@@ -23,5 +23,6 @@ void insertMa(char [], LIST*);
 void insertEx(char [], LIST*);
 void insertEn(char [], LIST*);
 void insertLD(char [], LIST*);
+int regTenToFifthTeen(char reg []);
 
 #endif
