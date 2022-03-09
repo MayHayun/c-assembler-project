@@ -12,7 +12,7 @@
 
 
 int validation(FILE *fileName, LIST *names){
-  int result = 1, lineNumber = 0;
+  int result = 1, lineNumber = 0, wordNumber = 0;
   int commaLegit = 0;
   char line[MAX_LINE_LENGTH];
   
@@ -28,15 +28,21 @@ int validation(FILE *fileName, LIST *names){
     /* the limit of 200 lines is for the makinng of the code */
     /* for every word */
     while( token != NULL && lineNumber <= 200 ){
-
-      if(token[strlen(token)-1] == ':'){
-        token[strlen(token)-1] = '\0';
-        if( has( names, token) ){
-          if( getNode(names, token)->labDec == 1 ){
-            (getNode(names, token)->labDec)--;
-          }
-        }
+      wordNumber++;
+      
+      if( wordNumber == 1 && checkForLabelAtBegining(names, token, lineNumber) == 0 ){
+        result = 0;
       }
+      /*
+      if( checkForLabelAtBegining(names, token, lineNumber) == 1 ){
+        check commands
+      }
+      */
+      if( wordNumber == 1 && !strcmp(token,"macro") ){
+        token = strtok(NULL, parse_words);
+        checkForMacroAtBegining( LIST *names, char token[], int lineNumber )
+      }
+      
       
       token = strtok(NULL, parse_words);
     }
@@ -91,7 +97,7 @@ LIST *validNames(FILE *fileName, char *nameOfFile){
   return names;
 }
 
-int checkForLabelAtBegining( LIST names, char token[], int lineNumber ){
+int checkForLabelAtBegining( LIST *names, char token[], int lineNumber ){
 
   if(token[strlen(token)-1] == ':'){
     token[strlen(token)-1] = '\0';
@@ -102,7 +108,22 @@ int checkForLabelAtBegining( LIST names, char token[], int lineNumber ){
         return 1;
       }
     }
+    printf("inside checkForLabelAtBegining :( \n");
+    printf("invalid label in line: %d \n", lineNumber );
   }
+  return 0;
+}
+
+int checkForMacroAtBegining( LIST *names, char token[], int lineNumber ){
+
+  if( has(names, token) ){
+    if( getNode(names, token)->mac == 1 ){
+      getNode(names, token)->mac = 0;
+      return 1;
+    }
+  }
+    printf("inside checkFor-Macro-AtBegining :( \n");
+    printf("invalid macro in line: %d \n", lineNumber );
   return 0;
 }
 
