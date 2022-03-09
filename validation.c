@@ -7,8 +7,12 @@
 #include "list.h"
 #include "validation.h"
 
+#define parse_delivery " ,\t\n["
+
 /* this function is the first pass that parses the
 words and filter the special words words */
+
+/* need to fix a bug - if there is empty line in the input we have an error */
 LIST *validNames(FILE *fileName, char *nameOfFile){
   char line[MAX_LINE_LENGTH];
   char lineCopy[MAX_LINE_LENGTH];
@@ -50,12 +54,13 @@ LIST *validNames(FILE *fileName, char *nameOfFile){
 }
 
 /* get the valid macros and labels and check if the sentence is valid */
+/*
 void validation(FILE *fileName, LIST *names ){
   int i = 0;
   char line[MAX_LINE_LENGTH];
   char lineCopy[MAX_LINE_LENGTH];
   char *token;
-  /*
+  
   while (fgets(line, MAX_LINE_LENGTH, fileName)){
     strcpy(lineCopy, line);
     
@@ -80,30 +85,49 @@ void validation(FILE *fileName, LIST *names ){
     }
   }
   */
-}
 /* func to decide which delivery it is
    the given string is after move to none white!*/
 int whichDelivery(char myStr[], LIST *names){
-  char *temp;
-  char *tempRegister;
+  char* temp;
+  char* tempLabel;
+  char* tempRegister;
+  char* token;
   
   /* Delivery 0 */
-  if( str[0] == '#' && isIntNum(myStr + 1)){
+  if( myStr[0] == '#' && isAIntNum(myStr + 1)){
     return 0;
   }
   /* Delivery 1 */
-  if(isAGuidance(str)){
+  if(isAGuidance(myStr)){
     return 1;
   }
+  
   /* Delivery2 */
-  temp = strtok(myStr,'[');
-  te
-  /* need to update temp and tempRegister */
-  if(has(names,temp) && regTenToFifthTeen(tempRegister)){
-    return 2;
+  strcpy(temp, myStr);
+  
+  token = strtok(temp, parse_delivery);
+  strcpy( tempLabel, token );
+
+  /* label check */
+  
+  
+  token = strtok(NULL, parse_delivery);
+  strcpy( tempRegister, token );
+  
+  
+  /* register check */
+  if( strlen(tempRegister) == 4 ){
+    if( tempRegister[0] == 'r' && tempRegister[1] == '1' && tempRegister[3] == ']' ){
+
+      if( tempRegister[2] == '0' || tempRegister[2] == '1' || tempRegister[2] == '2' || tempRegister[2] == '3' || tempRegister[2] == '4' || tempRegister[2] == '5' ){
+        if(has(names,tempLabel)){
+          return 2;
+        }
+      }
+    } 
   }
   /* Delivery 3 */
-  if(isARegister(str)){
+  if(isARegister(myStr)){
     return 3;
   }
 
@@ -177,7 +201,7 @@ int isACommand(char line []){
   insert(l,"rts");
   insert(l,"stop");
   return has(l,line);
-  }
+}
 
 int isARegister(char line []){
   LIST *l = newList();
