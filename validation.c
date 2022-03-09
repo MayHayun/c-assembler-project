@@ -43,11 +43,6 @@ int validation(FILE *fileName, LIST *names){
         check commands
       }
       */
-
-      if(  ){
-        printf("line is too long for macro\ extern\ entry \n");
-        break;
-      }
       
       /* macro */
       if( wordNumber == 1 && !strcmp(token,"macro") && isCurNumOfWords( line, 2) == 1 ){
@@ -58,15 +53,13 @@ int validation(FILE *fileName, LIST *names){
         }
       }
       /* extern */
-      if( wordNumber == 1 && !strcmp(token,"extern") ){
+      if( wordNumber == 1 && !strcmp(token,"extern") && isCurNumOfWords( line, 2) == 1 ){
         token = strtok(NULL, parse_words);
         wordNumber++;
         if(wordNumber == 2 && checkForExternAtSecond(names, token, lineNumber) == 0 ){
           result = 0;
         }
       }
-
-
 
       /* entry */
     }
@@ -151,7 +144,16 @@ int checkForMacroAtSecond( LIST *names, char token[], int lineNumber ){
   return 0;
 }
 
-int checkForExternAtSecond
+int checkForExternAtSecond( LIST *names, char token[], int lineNumber ){
+    if( has(names, token) ){
+    if( getNode(names, token)->ext != 0 ){
+      return 1;
+    }
+  }
+    printf("inside checkFor-Macro-AtBegining :( \n");
+    printf("invalid macro in line: %d \n", lineNumber );
+  return 0;
+}
 
 /* func to decide which delivery it is
    the given string is after move to none white!*/
