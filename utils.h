@@ -29,6 +29,27 @@ typedef struct MACRO
     struct MACRO *next; 
 }MACRO;
 
+typedef struct symbolLink
+{
+	char name[31];
+	int adress;
+	int placing; /* 0-code image, 1-data image */
+	int visibility; /* 0-internal, 1-entry, 2-extern */
+	struct symbolLink *next;
+
+}symbolLink;
+
+typedef struct WORD
+{
+    int word[20];
+    WORD *next;
+}WORD;
+
+typedef struct LINE
+{
+    WORD *wordHead;
+    LINE *next;
+}LINE;
 
 struct MACRO *head = NULL;
 int move_to_none_white(char line[], int i);
@@ -42,4 +63,11 @@ int isNameOk(char line []);
 int isARegister(char []);
 int isACommand(char []);
 int isANaturalNum(char);
+
+symbolLink * symboleTableCreat(FILE *filePointer);
+symbolLink *pushLable(symbolLink *head, char lableName[]);
+struct symbolLink* findLable(struct symbolLink *head, char lableName[]);
+int isLableDec(char *lable);
+commandsStruct *findCommand(char * command);
+int isANum(char *param);
 
