@@ -79,14 +79,21 @@ int validation(FILE *fileName, LIST *names){
 
       /* .string */
       if( !strcmp(token,".string")){
-        token = strtok(NULL, "\"");
-        wordNumber++;
-        if( token != NULL ){
-          token = strtok(NULL, "\"");
-            if( token == NULL )
-              printf("end of string\n");
 
+        if( countQuotationMarks(line) != 2 ){
+          printf("invalid string in line %d\n", lineNumber);
+          result = 0;
         }
+        if( result ){
+          if( line[giveTheLastNoneWhiteIndex(line)] == '"' ){
+            token = strtok(NULL, parse_words);
+            if( !token[0] == '"' ){
+              printf("invalid string in line %d\n", lineNumber);
+              result = 0;
+            }
+          }
+        }
+        
         /* isValidString */
       }
       
@@ -262,22 +269,6 @@ int whichDelivery(char myStr[], LIST *names){
     return -1;
 }
 
-int regTenToFifthTeen(char reg[]){
-  if(!strcmp(reg,"[r10]"))
-    return 1;
-  if(!strcmp(reg,"[r11]"))
-    return 1;
-  if(!strcmp(reg,"[r12]"))
-    return 1;
-  if(!strcmp(reg,"[r13]"))
-    return 1;
-  if(!strcmp(reg,"[r14]"))
-    return 1;
-  if(!strcmp(reg,"[r15]"))
-    return 1;
-  return 0;
-}
-
 int isAGuidance(char line []){
   LIST *l = newList();
   insert(l,".data");
@@ -433,5 +424,3 @@ int isCurNumOfWords(char line[], int a){
   }
   return 0;
 }
-
-
