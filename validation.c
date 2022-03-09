@@ -85,12 +85,14 @@ void validation(FILE *fileName, LIST *names ){
     }
   }
   */
+
 /* func to decide which delivery it is
    the given string is after move to none white!*/
 int whichDelivery(char myStr[], LIST *names){
-  char* temp;
-  char* tempLabel;
-  char* tempRegister;
+  char tempLine[30];
+  char command[30];
+  char tempLabel[30];
+  char tempRegister[30];
   char* token;
   
   /* Delivery 0 */
@@ -103,29 +105,32 @@ int whichDelivery(char myStr[], LIST *names){
   }
   
   /* Delivery2 */
-  strcpy(temp, myStr);
-  
-  token = strtok(temp, parse_delivery);
+  strcpy(tempLine, myStr);
+    
+  token = strtok(tempLine, parse_delivery);
+  strcpy( command, token );
+  printf("\ncomman->%s", command);
+ 
+  token = strtok(NULL, parse_delivery);
   strcpy( tempLabel, token );
-
-  /* label check */
-  
-  
+  printf("\nlabel->%s", tempLabel);
+ 
   token = strtok(NULL, parse_delivery);
   strcpy( tempRegister, token );
-  
-  
-  /* register check */
-  if( strlen(tempRegister) == 4 ){
-    if( tempRegister[0] == 'r' && tempRegister[1] == '1' && tempRegister[3] == ']' ){
+  printf("\nregister->%s", tempRegister);
 
-      if( tempRegister[2] == '0' || tempRegister[2] == '1' || tempRegister[2] == '2' || tempRegister[2] == '3' || tempRegister[2] == '4' || tempRegister[2] == '5' ){
-        if(has(names,tempLabel)){
-          return 2;
-        }
-      }
-    } 
+  if( strlen(tempRegister) == 4 ){
+      if( tempRegister[0] == 'r' && tempRegister[1] == '1' && tempRegister[3] == ']' ){
+  
+          if( tempRegister[2] == '0' || tempRegister[2] == '1' || tempRegister[2] == '2' || tempRegister[2] == '3' ||         tempRegister[2] == '4' ||         tempRegister[2] == '5' ){
+              
+                  printf("\nBOOM");
+              
+          }
+      } 
   }
+
+  
   /* Delivery 3 */
   if(isARegister(myStr)){
     return 3;
@@ -137,7 +142,7 @@ int whichDelivery(char myStr[], LIST *names){
 
 
 
-  int regTenToFifthTeen(char reg []){
+  int regTenToFifthTeen(char reg[]){
     if(!strcmp(reg,"[r10]"))
       return 1;
     if(!strcmp(reg,"[r11]"))
