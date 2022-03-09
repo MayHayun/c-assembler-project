@@ -7,7 +7,45 @@
 #include "list.h"
 #include "validation.h"
 
+#define parse_words "  \t\n"
 #define parse_delivery " ,\t\n["
+
+
+int validation(FILE *fileName, LIST *names){
+  int result = 1, lineNumber = 0;
+  int commaLegit = 0;
+  char line[MAX_LINE_LENGTH];
+  
+  char lineCopy[MAX_LINE_LENGTH];
+  char *token;
+
+  /* for every line */
+  while (fgets(line, MAX_LINE_LENGTH, fileName)){
+    lineNumber++;
+    strcpy(lineCopy, line);
+    token = strtok(lineCopy, parse_words);
+    
+    /* the limit of 200 lines is for the makinng of the code */
+    /* for every word */
+    while( token != NULL && lineNumber <= 200 ){
+
+      if(token[strlen(token)-1] == ':'){
+        token[strlen(token)-1] = '\0';
+        if( has( names, token) ){
+          if( getNode(names, token)->labDec == 1 ){
+            (getNode(names, token)->labDec)--;
+          }
+        }
+      }
+      
+      token = strtok(NULL, parse_words);
+    }
+  }
+
+  
+  return result;
+}
+
 
 /* this function is the first pass that parses the
 words and filter the special words words */
@@ -53,38 +91,20 @@ LIST *validNames(FILE *fileName, char *nameOfFile){
   return names;
 }
 
-/* get the valid macros and labels and check if the sentence is valid */
-/*
-void validation(FILE *fileName, LIST *names ){
-  int i = 0;
-  char line[MAX_LINE_LENGTH];
-  char lineCopy[MAX_LINE_LENGTH];
-  char *token;
-  
-  while (fgets(line, MAX_LINE_LENGTH, fileName)){
-    strcpy(lineCopy, line);
+int checkForLabelAtBegining( LIST names, char token[], int lineNumber ){
+
+  if(token[strlen(token)-1] == ':'){
+    token[strlen(token)-1] = '\0';
     
-    if(!skip(line)){
-      token = strtok(lineCopy, parse);
-
-      if( !strcmp(token, "macro") && isCurNumOfWords(line,2)){
-        token = strtok(NULL, parse); 
-      }
-
-      if( !strcmp(token, ".extern") && isCurNumOfWords(line,2)){
-        token = strtok(NULL, parse);
-      }
-
-      if( !strcmp(token, ".entry") && isCurNumOfWords(line,2)){
-        token = strtok(NULL, parse);
-      }
-
-      if(token[strlen(token)-1] == ':'){
-        token[strlen(token)-1] = '\0';
+    if( has( names, token) ){
+      if( getNode(names, token)->labDec == 1 ){
+        getNode(names, token)->labDec = 0;
+        return 1;
       }
     }
   }
-  */
+  return 0;
+}
 
 /* func to decide which delivery it is
    the given string is after move to none white!*/
@@ -135,8 +155,6 @@ int whichDelivery(char myStr[], LIST *names){
   else
     return -1;
 }
-
-
 
 int regTenToFifthTeen(char reg[]){
   if(!strcmp(reg,"[r10]"))
