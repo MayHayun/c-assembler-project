@@ -185,3 +185,31 @@ int isANum(char *param)
         return 1;
     return 0;
 }
+
+int giveTheLastNoneWhiteIndex(char line[]){
+  int i = 1;
+  while( !isspace(line[strlen(line) - i ]) ){
+    i++;
+  }
+  return (strlen(line)-i-1);
+}
+
+int countWords(char line []){
+  int i = 0, word = 0, inWord = 0;
+
+  /* loop till end of string */
+  while(line[i] != '\0'){
+    
+    if(!isspace(line[i]) && inWord == 0){
+      word++;
+      inWord = 1;
+    }
+    if(isspace(line[i])){
+      inWord = 0;
+    }
+    i++;
+  }
+  return word;
+}
+
+
