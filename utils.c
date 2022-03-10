@@ -110,40 +110,42 @@ int isACommand(char line []){
   return 0;
 }
 
-int isARegister(char line []){
+int isARegister(char line[]){
+  move_to_none_white(line, 0);
   if(!strcmp(line,"r0"))
-    return 1;  
+    return 0;  
   if(!strcmp(line,"r1"))
     return 1;
   if(!strcmp(line,"r2"))
-    return 1;  
+    return 2;  
   if(!strcmp(line,"r3"))
-    return 1;
+    return 3;
   if(!strcmp(line,"r4"))
-    return 1;  
+    return 4;  
   if(!strcmp(line,"r5"))
-    return 1;
+    return 5;
   if(!strcmp(line,"r6"))
-    return 1;  
+    return 6;  
   if(!strcmp(line,"r7"))
-    return 1;
+    return 7;
   if(!strcmp(line,"r8"))
-    return 1;  
+    return 8;  
   if(!strcmp(line,"r9"))
-    return 1;
+    return 9;
   if(!strcmp(line,"r10"))
-    return 1;  
+    return 10;  
   if(!strcmp(line,"r11"))
-    return 1;
+    return 11;
   if(!strcmp(line,"r12"))
-    return 1;  
+    return 12;  
   if(!strcmp(line,"r13"))
-    return 1;
+    return 13;
   if(!strcmp(line,"r14"))
-    return 1;  
+    return 14;  
   if(!strcmp(line,"r15"))
-    return 1;
-  return 0;
+    return 15;
+  
+  return -1;
 }
 
 int isNameOk(char line []){
