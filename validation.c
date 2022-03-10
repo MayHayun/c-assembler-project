@@ -9,13 +9,14 @@
 
 #define parse_words "  \t\n"
 #define parse_delivery " ,\t\n["
+#define parse_commands " ,\t\n:"
 
 
 int validation(FILE *fileName, LIST *names){
   int result = 1, lineNumber = 0, wordNumber = 0;
-  int commaLegit = 0;
-  char line[MAX_LINE_LENGTH];
+  int commaLegit = 0, neededOperands;
   
+  char line[MAX_LINE_LENGTH];
   char lineCopy[MAX_LINE_LENGTH];
   char *token;
 
@@ -93,8 +94,11 @@ int validation(FILE *fileName, LIST *names){
             }
           }
         }
-        
-        /* isValidString */
+      }
+
+      /* command */
+      if( isACommand(token) ){
+        neededOperands = howManyOperands( token );
       }
       
     }
@@ -103,26 +107,7 @@ int validation(FILE *fileName, LIST *names){
   return result;
 }
 
-/* didn't test it yet */
-int isValidString(char myStr[]){
-  int i = 0;
-  if(myStr[i] == '\0' && myStr[i] != '"'){ /* why not || */
-    return 0;
-  }
-  int countColons = 1;
-  while(myStr[i] != '/0'){
-    if(myStr[i] == '""'){
-      countColons++;
-    }
-    if(countColons > 2){
-      return 0;
-    }
-    i++;
-  }
-  if(myStr[i-1] == '"'){
-    return 1;
-  }
-}
+
 /* this function is the first pass that parses the
 words and filter the special words words */
 
@@ -217,6 +202,38 @@ int checkForEntryAtSecond( LIST *names, char token[], int lineNumber ){
     printf("inside checkFor-entry-AtBegining :( \n");
     printf("invalid entry in line: %d \n", lineNumber );
   return 0;
+}
+
+/* given a command find how many */
+int howManyOperands( char commandName[] ){
+  if( !strcmp(commandName, "mov") || !strcmp(commandName, "cmp") || !strcmp(commandName, "add") || !strcmp(commandName, "sub") || !strcmp(commandName, "lea") ){
+    return 2;
+  }
+
+  if( !strcmp(commandName, "rts") || !strcmp(commandName, "stop") )
+    return 0;
+
+  if( !strcmp(commandName, "clr") || !strcmp(commandName, "not") || !strcmp(commandName, "inc") || !strcmp(commandName, "dec") || !strcmp(commandName, "jmp") || !strcmp(commandName, "bne") || !strcmp(commandName, "jsr") || !strcmp(commandName, "red") || !strcmp(commandName, "prn") ){
+    return 1;
+  }
+
+  return -1;
+}
+
+int isCommandLegit( char line[] ){
+  char *token;
+  int flag = 1, commas;
+
+  commas = countCommas(line);
+  token = strtok( line, "," );
+
+  while( token != NULL && flag ){
+    if( isACommand(token) )
+      flag = 0;
+    
+    token = strtok( line, parse_commands );
+  }
+    
 }
 
 /* func to decide which delivery it is
@@ -411,16 +428,3 @@ void insertLD(char token [], LIST* names){
   }
 }
 
-/* check if the numbers of words in a given number is the same as a given integer number */
-int isCurNumOfWords(char line[], int a){
-  if(countWords(line) < a){
-    //printf("Missing parameter\n");
-  }
-  if(countWords(line) > a){
-    //printf("Extraneous text after end of command\n");
-  }
-  if(countWords(line) == a){
-    return 1;
-  }
-  return 0;
-}
