@@ -6,8 +6,6 @@
 #include "firstPass.h"
 #include "symbolTable.h"
 
-#include "firstPass.h"
-
 
 int * decToBinary(int num)
 {
@@ -235,28 +233,44 @@ void firstPass(FILE *filePointer)
     char line[81];
     char lineCopy[81];
     char *token;
+    char *firstWord;
     symbolLink *lable;
     symbolLink *headOfTable = symboleTableCreat(filePointer);
     LINE *headOfFile;
+    headOfFile = NULL;
     
     while(fgets(line, 81, filePointer))
     {
         strcpy(lineCopy, line);
-        token = strtok(line, CUT);
-        if(isLable(token)){
-            lable = find(headOfTable, token);
+        token = strtok(line, ":\t ");
+        if((lable = findSymbol(headOfTable, token)) != NULL){
+            char *tokenCopy;
             lable->adress = IC;
             token = strtok(NULL, '\n');
-            /*a method not written yet to code it to binary*/
+            strcpy(tokenCopy, token);
+            firstWord = strtok(token, CUT);
+            if(isACommand(firstWord))
+                if(IC == 100)
+                    headOfFile = toBinaryCommand(tokenCopy, headOfTable);
+                else
+                    addLine(headOfFile, toBinaryCommand(token, headOfTable));
+            else
+                /*toBinaryGuidance*/
         }else if(!strcmp(token, ".extern")){
             token = strtok(NULL, CUT);
-            lable = find(headOfTable, token);
+            lable = findSymbol(headOfTable, token);
             lable->visibility = 2;
         }else if(!strcmp(token, ".entry")){
             token = strtok(NULL, CUT);
-            lable = find(headOfTable, token);
+            lable = findSymbol(headOfTable, token);
             lable->visibility = 1;
-        }
+        } else if(isACommand(token))
+            if(IC == 100)
+                headOfFile = toBinaryCommand(lineCopy, headOfTable);
+            else
+                addLine(headOfFile, toBinaryCommand(lineCopy, headOfTable));
+        else
+            /*toBinaryGuidance*/
         
     }
 }
