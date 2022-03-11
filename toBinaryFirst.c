@@ -6,54 +6,137 @@
 #include "firstPass.h"
 #include "symbolTable.h"
 
-
-int * decToBinary(int num){
-    int *array, i;
-    array = calloc(16, sizeof(int));
-    
-    if( num >= 0 ){
-        for(i = 0 ; i < 17 ; i ++){    
-            array[i] = num%2;    
-            num = num/2;    
-        }  
-        return array;
-    }
-
-    num = (~num);
-
-    for(i = 0 ; i < 17 ; i ++){    
-        array[i] = num%2;    
-        num = num/2;    
-    }
-    
-    for(i = 0 ; i < 17 ; i ++){    
-        if( array[i] == 1 )
-            array[i] = 0;
-        else if( !array[i] )
-            array[i] = 1;
-    }  
-    
-    return array;
-}
-
-void addLine(LINE *head, LINE *link)
+LINE *firstPass(FILE *filePointer, symbolLink *headOfTable)
 {
-    while(head->next != NULL)
-        head = head->next;
-    head->next = link;
+    char line[81];
+    char lineCopy[81];
+    char *token;
+    char *firstWord;
+    symbolLink *lable;
+    LINE *headOfFile;
+    headOfFile = NULL;
+    
+    while(fgets(line, 81, filePointer))
+    {
+        strcpy(lineCopy, line);
+        token = strtok(line, ":\t ");
+        if((lable = findSymbol(headOfTable, token)) != NULL){
+            char *tokenCopy;
+            lable->adress = IC;
+            token = strtok(NULL, '\n');
+            strcpy(tokenCopy, token);
+            firstWord = strtok(token, CUT);
+            if(isACommand(cutWhiteChars(firstWord)))
+                if(IC == 100)
+                    headOfFile = toBinaryCommand(tokenCopy, headOfTable);
+                else
+                    addLine(headOfFile, toBinaryCommand(tokenCopy, headOfTable));
+            else
+                if(IC == 100)
+                    headOfFile = toBinaryGuidance(tokenCopy);
+                else
+                    addLine(headOfFile, toBinaryGuidance(tokenCopy));
+        }else if(!strcmp(token, ".extern")){
+            token = strtok(NULL, CUT);
+            lable = findSymbol(headOfTable, token);
+            lable->visibility = 2;
+        }else if(!strcmp(token, ".entry")){
+            token = strtok(NULL, CUT);
+            lable = findSymbol(headOfTable, token);
+            lable->visibility = 1;
+        } else if(isACommand(cutWhiteChars(token)))
+            if(IC == 100)
+                headOfFile = toBinaryCommand(lineCopy, headOfTable);
+            else
+                addLine(headOfFile, toBinaryCommand(lineCopy, headOfTable));
+        else
+            if(IC == 100)
+                    headOfFile = toBinaryGuidance(lineCopy);
+                else
+                    addLine(headOfFile, toBinaryGuidance(lineCopy));
+    }
+    return headOfFile;
 }
 
-void addWord(WORD *head, WORD *link)
+LINE *toBinaryCommand(char line[], symbolLink *headOfTable)
 {
-    while(head->next != NULL)
-        head = head->next;
-    head->next = link;
+    char *command;
+    char *token;
+    WORD *headForLine = (struct WORD*)malloc(sizeof(struct WORD));
+    LINE *node;
+    commandsStruct *commandFound;
+    char *restOfString;
+
+    command = strtok(line, CUT);
+    commandFound = findCommand(command);
+    headForLine->word[commandFound->opcode] = 1;
+    headForLine->word[18] = 1;
+    IC++;
+    node->wordHead = headForLine;
+    restOfString = strtok(NULL, '\n');
+
+    addWord(headForLine, deliveryForBinary(commandFound, restOfString, headOfTable));
+    
+    token = strtok(restOfString, ",\n");
+
+    while(token != NULL)
+    {
+        if(isARegister(cutWhiteChars(token)) == -1)
+            break;
+        addWord(headForLine, extraWordsToBinary(token));
+        token = strtok(NULL, ",\n");
+    }
+    return node;
 }
 
-WORD* deliveryForBinary(commandsStruct *command ,char myStr[], symbolLink *headOfTable){ 
-    char tempLine[30]; 
-    char tempLabel[30]; 
-    char tempRegister[30]; 
+LINE *toBinaryGuidance(char line[])
+{
+    char *guidWord, *param;
+    WORD *headForLine;
+    LINE *node;
+    guidWord = strtok(line, " \t");
+    if(!strcmp(guidWord, ".string"))
+    {
+        int i;
+        param = strtok(NULL, "\"");
+        param = strtok(NULL, "\"");
+        headForLine = charToBinary(*(param));
+        node->wordHead = headForLine;
+        for(i = 1; i < strlen(param); i++)
+            addWord(headForLine, charToBinary(*(param + i)));
+    }else{
+        int count = 1;
+        while(param != NULL)
+        {
+            int *paramInBinary, i, num, k = 1;
+            WORD *link;
+            param = strtok(NULL, ",");
+            for(i = strlen(param)-1; i >= 0; i--)
+            {
+                if(*(param + i) == '-')
+                    num = num * (-1);
+                else if(isdigit(*param + i)){
+                    num = num + (*(param + i) * k);
+                    k = k * 10;
+                }
+            }
+            paramInBinary = decToBinary(num);
+            link->word[18] = 1;
+            for(i = 0; i < 16; i++)
+                link->word[i] = *(paramInBinary + i);
+            if(count)
+                headForLine = link;
+            else
+                addWord(headForLine, link);
+            count++;
+            DC++;
+        }
+    }
+    return node;
+}
+
+WORD *deliveryForBinary(commandsStruct *command ,char myStr[], symbolLink *headOfTable)
+{ 
     int isDest = 1;
     int i, j;
     char* token; 
@@ -75,7 +158,7 @@ WORD* deliveryForBinary(commandsStruct *command ,char myStr[], symbolLink *headO
     while(token != NULL)
     {
         /* Delivery 0 */ 
-        if( myStr[0] == '#' && isAIntNum(token + 1))
+        if( myStr[0] == '#')
         {
             token = strtok(NULL, ", \t\n");
             continue;
@@ -89,7 +172,7 @@ WORD* deliveryForBinary(commandsStruct *command ,char myStr[], symbolLink *headO
                 link->word[6] = 1;
 
         /* Delivery 3 */
-        else if(isARegister(token) != -1)
+        else if(isARegister(cutWhiteChars(token)) != -1)
         {   
             int *regInBinary;
             regInBinary = decToBinary(isARegister(token));
@@ -132,22 +215,7 @@ WORD* deliveryForBinary(commandsStruct *command ,char myStr[], symbolLink *headO
     }
     IC++;
     return link;
-} 
-
-int isNum(char *str)
-{
-    if(*str == '#')
-        return 1;
-    return 0;
-}
-
-int extractRegister(char * param)
-{
-    char *token;
-    token = strtok(param, "[");
-    token = strtok(NULL, "]");
-    return isARegister(token);
-}    
+}  
 
 WORD *extraWordsToBinary(char *param)
 {
@@ -170,44 +238,57 @@ WORD *extraWordsToBinary(char *param)
         link->word[18] = 1;
         IC++;
         return link;
-    }else 
+    }else
         IC = IC + 2;
     return NULL;
 }
 
-LINE *toBinaryCommand(char line[], symbolLink *headOfTable)
+WORD *charToBinary(char ch)
 {
-    char *command;
-    char *token;
-    WORD *headForLine = (struct WORD*)malloc(sizeof(struct WORD));
-    LINE *node;
-    commandsStruct *commandFound;
-    char *restOfString;
+    WORD *link;
+    int charInAscii = ch, *charInBinary, i;
+    link->word[18] = 1;
+    charInBinary = decToBinary(charInAscii);
+    for(i = 0; i < 16; i++)
+        link->word[i] = *(charInBinary);
+    DC++;
+    return link;
 
-    command = strtok(line, CUT);
-    commandFound = findCommand(command);
-    headForLine->word[commandFound->opcode] = 1;
-    headForLine->word[18] = 1;
-    IC++;
-    node->wordHead = headForLine;
-    restOfString = strtok(NULL, '\n');
-
-    addWord(headForLine, deliveryForBinary(commandFound, restOfString, headOfTable));
-    
-    token = strtok(restOfString, ",\n");
-
-    while(token != NULL)
-    {
-        if(isARegister(token) == -1)
-            break;
-        addWord(headForLine, extraWordsToBinary(token));
-        token = strtok(NULL, ",\n");
-    }
-    return node;
 }
 
+void addLine(LINE *head, LINE *link)
+{
+    while(head->next != NULL)
+        head = head->next;
+    head->next = link;
+    link->next = NULL;
+}
 
-int isARegister(char line []){
+void addWord(WORD *head, WORD *link)
+{
+    while(head->next != NULL)
+        head = head->next;
+    head->next = link;
+    link->next = NULL;
+}
+
+int isNum(char *str)
+{
+    if(*str == '#')
+        return 1;
+    return 0;
+}
+
+int extractRegister(char * param)
+{
+    char *token;
+    token = strtok(param, "[");
+    token = strtok(NULL, "]");
+    return isARegister(token);
+} 
+
+int isARegister(char line [])
+{
   if(!strcmp(line,"r0"))
     return 0;  
   if(!strcmp(line,"r1"))
@@ -243,51 +324,14 @@ int isARegister(char line []){
   return -1;
 }
 
-
-void firstPass(FILE *filePointer)
-{
-    int DC = 0;
-    char line[81];
-    char lineCopy[81];
-    char *token;
-    char *firstWord;
-    symbolLink *lable;
-    symbolLink *headOfTable = symboleTableCreat(filePointer);
-    LINE *headOfFile;
-    headOfFile = NULL;
-    
-    while(fgets(line, 81, filePointer))
-    {
-        strcpy(lineCopy, line);
-        token = strtok(line, ":\t ");
-        if((lable = findSymbol(headOfTable, token)) != NULL){
-            char *tokenCopy;
-            lable->adress = IC;
-            token = strtok(NULL, '\n');
-            strcpy(tokenCopy, token);
-            firstWord = strtok(token, CUT);
-            if(isACommand(firstWord))
-                if(IC == 100)
-                    headOfFile = toBinaryCommand(tokenCopy, headOfTable);
-                else
-                    addLine(headOfFile, toBinaryCommand(token, headOfTable));
-            else
-                /*toBinaryGuidance*/
-        }else if(!strcmp(token, ".extern")){
-            token = strtok(NULL, CUT);
-            lable = findSymbol(headOfTable, token);
-            lable->visibility = 2;
-        }else if(!strcmp(token, ".entry")){
-            token = strtok(NULL, CUT);
-            lable = findSymbol(headOfTable, token);
-            lable->visibility = 1;
-        } else if(isACommand(token))
-            if(IC == 100)
-                headOfFile = toBinaryCommand(lineCopy, headOfTable);
-            else
-                addLine(headOfFile, toBinaryCommand(lineCopy, headOfTable));
-        else
-            /*toBinaryGuidance*/
-        
+int * decToBinary(int num){
+    int *array, i;
+    array = calloc(16, sizeof(int));
+    if( num >= 0 ){
+        for(i = 0 ; i < 17 ; i ++){    
+            array[i] = num%2;    
+            num = num/2;    
+        }  
+        return array;
     }
 }
