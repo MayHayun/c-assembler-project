@@ -7,15 +7,32 @@
 #include "symbolTable.h"
 
 
-int * decToBinary(int num)
-{
+int * decToBinary(int num){
     int *array, i;
     array = calloc(16, sizeof(int));
-    for(i = 0 ; i < 17 ; i ++)    
-    {    
+    
+    if( num >= 0 ){
+        for(i = 0 ; i < 17 ; i ++){    
+            array[i] = num%2;    
+            num = num/2;    
+        }  
+        return array;
+    }
+
+    num = (~num);
+
+    for(i = 0 ; i < 17 ; i ++){    
         array[i] = num%2;    
         num = num/2;    
+    }
+    
+    for(i = 0 ; i < 17 ; i ++){    
+        if( array[i] == 1 )
+            array[i] = 0;
+        else if( !array[i] )
+            array[i] = 1;
     }  
+    
     return array;
 }
 
