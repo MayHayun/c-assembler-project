@@ -5,6 +5,22 @@
 
 #include "utils.h"
 
+char *cutWhiteChars(char *str)
+{
+    char *newStr;
+    int i, j = 0;
+    newStr = malloc(strlen(str) * sizeof(char));
+    for(i = 0; i < strlen(str); i++)
+    {
+        if(!isspace(*(str + i)))
+        {
+            *(newStr + j) = *(str + j);
+            j++;
+        }
+    }
+    *(newStr + j) = '\0';
+    return newStr;
+}
 commandsStruct ourCommands[] = {
     /* first group -> have 2 operands*/
     {"mov", 0, 0, 2},
