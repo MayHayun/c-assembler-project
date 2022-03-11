@@ -6,6 +6,23 @@
 #include "firstPass.h"
 #include "symbolTable.h"
 
+char *cutWhiteChars(char *str)
+{
+    char *newStr;
+    int i, j = 0;
+    newStr = malloc(strlen(str) * sizeof(char));
+    for(i = 0; i < strlen(str); i++)
+    {
+        if(!isspace(*(str + i)))
+        {
+            *(newStr + j) = *(str + j);
+            j++;
+        }
+    }
+    *(newStr + j) = '\0';
+    return newStr;
+}
+
 LINE *firstPass(FILE *filePointer, symbolLink *headOfTable)
 {
     char line[81];
@@ -73,9 +90,9 @@ LINE *toBinaryCommand(char line[], symbolLink *headOfTable)
     headForLine->word[18] = 1;
     IC++;
     node->wordHead = headForLine;
-    restOfString = strtok(NULL, '\n');
+    restOfString = strtok(NULL, "\n");
 
-    addWord(headForLine, deliveryForBinary(commandFound, restOfString, headOfTable));
+    addWord(&headForLine, deliveryForBinary(commandFound, restOfString, headOfTable));
     
     token = strtok(restOfString, ",\n");
 
@@ -179,13 +196,13 @@ WORD *deliveryForBinary(commandsStruct *command ,char myStr[], symbolLink *headO
             if(isDest)
             {
                 for(i = 2, j = 0; i < 6; i++, j++)
-                    link->word[i] = regInBinary + j;
+                    link->word[i] = *(regInBin + j);
                 link->word[0] = 1;
                 link->word[1] = 1;
             }else
             {
                 for(i = 8, j = 0; i < 12; i++, j++)
-                    link->word[i] = regInBinary + j;
+                    link->word[i] = *(regInBin + j);
                 link->word[6] = 1;
                 link->word[7] = 1;
             }
@@ -194,19 +211,19 @@ WORD *deliveryForBinary(commandsStruct *command ,char myStr[], symbolLink *headO
         /*Delivery 2*/
         else
         {
-            char *reg;
+            int reg;
             int *regInBin;
             reg = extractRegister(token);
             regInBin = decToBinary(reg);
             if(isDest)
             {
                 for(i = 2, j = 0; i < 6; i++, j++)
-                    link->word[i] = regInBin + j;
+                    link->word[i] = *(regInBin + j);
                 link->word[1] = 1;
             }else
             {
                 for(i = 8, j = 0; i < 12; i++, j++)
-                    link->word[i] = regInBin + j;
+                    link->word[i] = *(regInBin + j);
                 link->word[7] = 1;
             }
         }
@@ -268,7 +285,8 @@ void addWord(WORD *head, WORD *link)
 {
     while(head->next != NULL)
         head = head->next;
-    head->next = link;
+
+    head->next = *link;
     link->next = NULL;
 }
 
@@ -324,7 +342,7 @@ int isARegister(char line [])
   return -1;
 }
 
-int * decToBinary(int num){
+int *decToBinary(int num){
     int *array, i;
     array = calloc(16, sizeof(int));
 
