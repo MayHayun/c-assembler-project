@@ -73,4 +73,5 @@ struct symbolLink* findLable(struct symbolLink *head, char lableName[]);
 int isLableDec(char *lable);
 commandsStruct *findCommand(char * command);
 int isANum(char *param);
+char *cutWhiteChars(char *str);
 
