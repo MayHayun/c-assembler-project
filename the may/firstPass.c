@@ -5,13 +5,61 @@
 
 #include "firstPass.h"
 
+int isACommand(char line[] ){
+  if(!strcmp(line,"mov"))
+    return 1;
+  if(!strcmp(line,"cmp"))
+    return 1;
+  if(!strcmp(line,"add"))
+    return 1;
+  if(!strcmp(line,"sub"))
+    return 1;
+  if(!strcmp(line,"lea"))
+    return 1;  
+  if(!strcmp(line,"clr"))
+    return 1;
+  if(!strcmp(line,"not"))
+    return 1;
+  if(!strcmp(line,"inc"))
+    return 1;
+  if(!strcmp(line,"dec"))
+    return 1;
+  if(!strcmp(line,"jmp"))
+    return 1;
+  if(!strcmp(line,"bne"))
+    return 1;  
+  if(!strcmp(line,"jsr"))
+    return 1;
+  if(!strcmp(line,"red"))
+    return 1;
+  if(!strcmp(line,"prn"))
+    return 1;
+  if(!strcmp(line,"rts"))
+    return 1;
+  if(!strcmp(line,"stop"))
+    return 1;
+  return 0;
+}
+
+
+commandsStruct *findCommand(char * command)
+{
+    int i = 0;
+    for(; i < 17; i++)
+    {
+        if(!strcmp(command, ourCommands[i].commandName))
+        	return &ourCommands[i];
+    }
+    return NULL;
+
+}
 
 WORD *deliveryForBinary(commandsStruct *command ,char myStr[], symbolLink *headOfTable)
 { 
     int isDest = 1;
     int i, j;
     char* token; 
-    WORD* link; 
+    WORD* link = NULL; 
     
     token = strtok(myStr, ", \t\n");
     link->word[18] = 1;
@@ -36,7 +84,7 @@ WORD *deliveryForBinary(commandsStruct *command ,char myStr[], symbolLink *headO
         }
 
         /* Delivery 1 */ 
-        else if(find(headOfTable, myStr) != NULL)
+        else if(findSymbol(headOfTable, myStr) != NULL)
             if(isDest)
                 link->word[0] = 1;
             else
@@ -56,7 +104,7 @@ WORD *deliveryForBinary(commandsStruct *command ,char myStr[], symbolLink *headO
             }else
             {
                 for(i = 8, j = 0; i < 12; i++, j++)
-                    link->word[i] = *(decToBinary + j);
+                    link->word[i] = *(regInBinary + j);
                 link->word[6] = 1;
                 link->word[7] = 1;
             }
@@ -110,9 +158,10 @@ LINE *toBinaryCommand(char line[], symbolLink *headOfTable)
     char *command;
     char *token;
     WORD *headForLine = (struct WORD*)malloc(sizeof(struct WORD));
-    LINE *node;
+    LINE *node = NULL;
     commandsStruct *commandFound;
     char *restOfString;
+    node->wordHead = NULL;
 
     command = strtok(line, CUT);
     commandFound = findCommand(command);
@@ -122,7 +171,7 @@ LINE *toBinaryCommand(char line[], symbolLink *headOfTable)
     node->wordHead = headForLine;
     restOfString = strtok(NULL, "\n");
 
-    addWord(&headForLine, deliveryForBinary(commandFound, restOfString, headOfTable));
+    addWord( headForLine, deliveryForBinary(commandFound, restOfString, headOfTable));
     
     token = strtok(restOfString, ",\n");
 
@@ -152,9 +201,9 @@ LINE *firstPass(FILE *filePointer, symbolLink *headOfTable)
         strcpy(lineCopy, line);
         token = strtok(line, ":\t ");
         if((lable = findSymbol(headOfTable, token)) != NULL){
-            char *tokenCopy;
+            char *tokenCopy = NULL;
             lable->adress = IC;
-            token = strtok(NULL, '\n');
+            token = strtok(NULL, "\n");
             strcpy(tokenCopy, token);
             firstWord = strtok(token, CUT);
             if(isACommand(cutWhiteChars(firstWord)))
@@ -194,7 +243,8 @@ LINE *toBinaryGuidance(char line[])
 {
     char *guidWord, *param;
     WORD *headForLine;
-    LINE *node;
+    LINE *node = NULL;
+    node->wordHead = NULL;
     guidWord = strtok(line, " \t");
     if(!strcmp(guidWord, ".string"))
     {
@@ -210,7 +260,7 @@ LINE *toBinaryGuidance(char line[])
         while(param != NULL)
         {
             int *paramInBinary, i, num, k = 1;
-            WORD *link;
+            WORD *link = NULL;
             param = strtok(NULL, ",");
             for(i = strlen(param)-1; i >= 0; i--)
             {
@@ -240,7 +290,7 @@ LINE *toBinaryGuidance(char line[])
 
 WORD *extraWordsToBinary(char *param)
 {
-    WORD *link;
+    WORD *link = NULL;
     if(isNum(param))
     {
         int *numInBinary, i , num, k = 1;
@@ -266,7 +316,7 @@ WORD *extraWordsToBinary(char *param)
 
 WORD *charToBinary(char ch)
 {
-    WORD *link;
+    WORD *link = NULL;
     int charInAscii = ch, *charInBinary, i;
     link->word[18] = 1;
     charInBinary = decToBinary(charInAscii);
@@ -373,4 +423,34 @@ int *decToBinary(int num){
     }  
 
     return array;
+}
+
+int main(){
+
+  LINE *headOfFile;
+  WORD *link = NULL;
+  FILE *fptr;
+  symbolLink *head;
+
+  fptr = fopen("t.text", "r");
+
+  head = symboleTableCreat(fptr);
+  headOfFile = firstPass( fptr, head );
+
+
+  link = headOfFile->wordHead;
+  while(headOfFile != NULL)
+  {
+    int i;
+    while(link != NULL)
+    {
+      for(i = 0; i < 20; i++)
+      {
+        printf("\t%d\t\n", link->word[i]);
+      }
+      link = link->next;
+    }
+    headOfFile = headOfFile->next;
+  }
+  return 1;
 }
