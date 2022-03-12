@@ -3,7 +3,6 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "symbolTable.h"
 #define CUT "\t ,"
 
 
