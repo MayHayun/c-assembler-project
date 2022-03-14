@@ -356,7 +356,6 @@ LINE *firstPass(FILE *filePointer, symbolLink *headOfTable)
     char *firstWord;
     symbolLink *lable;
     LINE *headOfFile;
-    headOfFile = NULL;
     
     while(fgets(line, 81, filePointer))
     {
@@ -401,10 +400,14 @@ LINE *firstPass(FILE *filePointer, symbolLink *headOfTable)
             else
               addLine(headOfFile, toBinaryCommand(lineCopy, headOfTable));
         else
-            if(IC == 100)
-              headOfFile = toBinaryGuidance(lineCopy);
-            else
-              addLine(headOfFile, toBinaryGuidance(lineCopy));
+          if(IC == 100){
+            printf("oga boga\n");
+            headOfFile->wordHead = toBinaryGuidance(lineCopy)->wordHead;
+            printf("watermelon\n");
+
+          }
+          else
+            addLine(headOfFile, toBinaryGuidance(lineCopy));
     }
     
     return headOfFile;
@@ -415,6 +418,7 @@ LINE *toBinaryGuidance(char line[])
     char *guidWord, *param = NULL;
     WORD *headForLine;
     LINE *node;
+
     firstFour(headForLine);
     node->wordHead = headForLine;
     guidWord = strtok(line, " \t");
@@ -428,38 +432,40 @@ LINE *toBinaryGuidance(char line[])
       for(i = 1; i < strlen(param); i++)
         addWord(headForLine, charToBinary(*(param + i)));
     }else{
-        int count = 1;
-        param = strtok(NULL, ",");
-        while(param != NULL)
+      int count = 1;
+      param = strtok(NULL, ",");
+      while( param != NULL)
+      {
+        int *paramInBinary, i, num = 0, k = 1, x;
+        WORD *link;
+        trimTrailing(param);
+
+        /*firstFour(link);*/
+        for(i = strlen(param)-1; i >= 0; i--)
         {
-            int *paramInBinary, i, num = 0, k = 1;
-            WORD *link;
-            trimTrailing(param);
-            /*firstFour(link);*/
-            for(i = strlen(param)-1; i >= 0; i--)
-            {
-                printf("param I  = %c\n", param[i]);
-                if(param[i] == '-')
-                    num = num * (-1);
-                else if(isdigit(param[i])){
-                    num += ( param[i] * k);
-                    k *= 10;
-                    printf("num = %d, k = %d\n", num, k);
-                }
-            }
-            printf("num=%d\n", num);
-            paramInBinary = decToBinary(num);
-            link->word[18] = 1;
-            for(i = 0; i < 16; i++)
-                link->word[i] = *(paramInBinary + i);
-            if(count)
-                headForLine = link;
-            else
-                addWord(headForLine, link);
-            count++;
-            DC++;
-            param = strtok(NULL, ", ");
+          printf("param I  = %c\n", param[i]);
+
+          if(param[i] == '-')
+              num = num * (-1);
+
+          else if( isdigit(param[i]) ){
+            num += ( (param[i] - 48) * k);
+            k *= 10;
+          }
         }
+        paramInBinary = decToBinary(num);
+        link->word[18] = 1;
+        for(i = 0; i < 16; i++)
+          link->word[i] = *(paramInBinary + i);
+        
+        if(count)
+          headForLine = link;
+        else
+          addWord(headForLine, link);
+        count++;
+        DC++;
+        param = strtok(NULL, ", \n");
+      }
     }
     return node;
 }
@@ -628,7 +634,7 @@ int main(){
     if( headOfFile != NULL )
       link = headOfFile->wordHead;
 
-    /*while(headOfFile != NULL)
+    while(headOfFile != NULL)
     {
         int i;
         while(link != NULL)
@@ -641,6 +647,6 @@ int main(){
         }
         printf("\n");
         headOfFile = headOfFile->next;
-    }*/
+    }
     return 1;
 }
