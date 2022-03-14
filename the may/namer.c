@@ -340,12 +340,12 @@ LINE *firstPass(FILE *filePointer, symbolLink *headOfTable)
     LINE *headOfFile;
     headOfFile = NULL;
     
-    while(fgets(line, 81, stdin))
+    while(fgets(line, 81, filePointer))
     {
+        printf("in while\n");
         strcpy(lineCopy, line);
         token = strtok(line, CUTme);
 
-        printf("in while");
         if((lable = findSymbol(headOfTable, token)) != NULL){
             char *tokenCopy = NULL;
             lable->adress = IC;
@@ -370,23 +370,26 @@ LINE *firstPass(FILE *filePointer, symbolLink *headOfTable)
             token = strtok(NULL, CUT);
             lable = findSymbol(headOfTable, token);
             lable->visibility = 2;
+
         }else if(!strcmp(token, ".entry")){
-            printf("in if");
             token = strtok(NULL, CUT);
             lable = findSymbol(headOfTable, token);
             lable->visibility = 1;
+
         } else if(isACommand(cutWhiteChars(token)))
             if(IC == 100){
               
               headOfFile = toBinaryCommand(lineCopy, headOfTable);
             }
             else
-                addLine(headOfFile, toBinaryCommand(lineCopy, headOfTable));
+              addLine(headOfFile, toBinaryCommand(lineCopy, headOfTable));
         else
-            if(IC == 100)
-                    headOfFile = toBinaryGuidance(lineCopy);
-                else
-                    addLine(headOfFile, toBinaryGuidance(lineCopy));
+            if(IC == 100){
+              headOfFile = toBinaryGuidance(lineCopy);
+              printf("ice cream\n");
+            }
+            else
+              addLine(headOfFile, toBinaryGuidance(lineCopy));
     }
     
     return headOfFile;
@@ -399,6 +402,8 @@ LINE *toBinaryGuidance(char line[])
     LINE *node = NULL;
     node->wordHead = NULL;
     guidWord = strtok(line, " \t");
+
+    printf("pancake\n");
     if(!strcmp(guidWord, ".string"))
     {
         int i;
@@ -577,18 +582,22 @@ int *decToBinary(int num){
 }
 
 int main(){
-    LINE *headOfFile;
+    LINE *headOfFile = NULL;
     WORD *link;
     FILE *fptr;
+    FILE *ff;
     symbolLink *head;
     fptr = fopen("t.txt", "r");
-    
+
     head = symboleTableCreat(fptr);
     printf("BOOM\n");
-    fseek(fptr, 0, SEEK_SET);
-    headOfFile = firstPass( fptr, head );
-
-    link = headOfFile->wordHead;
+    fclose(fptr);
+    ff = fopen("t.txt", "r");
+    /*fseek(fptr, 0, SEEK_SET);*/
+    headOfFile = firstPass( ff, head );
+    
+    if( headOfFile != NULL )
+      link = headOfFile->wordHead;
 
     while(headOfFile != NULL)
     {
