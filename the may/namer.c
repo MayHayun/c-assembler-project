@@ -79,6 +79,23 @@ int extractRegister(char * param);
 int isARegister(char line []);
 int * decToBinary(int num);
 
+void trimTrailing(char * str){
+    int index = -1;
+    int i;
+
+    i = 0;
+    while(str[i] != '\0')
+    {
+        if(str[i] != ' ' && str[i] != '\t' && str[i] != '\n')
+        {
+            index= i;
+        }
+
+        i++;
+    }
+    str[index + 1] = '\0';
+}
+
 symbolLink *symboleTableCreat(FILE *filePointer)
 {
     char line[81];
@@ -195,8 +212,8 @@ WORD *deliveryForBinary(commandsStruct *command ,char myStr[], symbolLink *headO
     int i, j;
     char* token; 
     WORD* link = NULL; 
-    
     token = strtok(myStr, ", \t\n");
+    firstFour(link);
     link->word[18] = 1;
     if(command->funct != 0)
     {
@@ -303,6 +320,7 @@ LINE *toBinaryCommand(char line[], symbolLink *headOfTable)
     char *command;
     char *token;
     WORD *headForLine = (struct WORD*)malloc(sizeof(struct WORD));
+    firstFour(headForLine);
     LINE *node = NULL;
     commandsStruct *commandFound;
     char *restOfString;
@@ -342,7 +360,6 @@ LINE *firstPass(FILE *filePointer, symbolLink *headOfTable)
     
     while(fgets(line, 81, filePointer))
     {
-        printf("in while\n");
         strcpy(lineCopy, line);
         token = strtok(line, CUTme);
 
@@ -384,10 +401,8 @@ LINE *firstPass(FILE *filePointer, symbolLink *headOfTable)
             else
               addLine(headOfFile, toBinaryCommand(lineCopy, headOfTable));
         else
-            if(IC == 100){
+            if(IC == 100)
               headOfFile = toBinaryGuidance(lineCopy);
-              printf("ice cream\n");
-            }
             else
               addLine(headOfFile, toBinaryGuidance(lineCopy));
     }
@@ -397,13 +412,12 @@ LINE *firstPass(FILE *filePointer, symbolLink *headOfTable)
 
 LINE *toBinaryGuidance(char line[])
 {
-    char *guidWord = NULL, *param = NULL;
+    char *guidWord, *param = NULL;
     WORD *headForLine;
-    LINE *node = NULL;
-    node->wordHead = NULL;
+    LINE *node;
+    firstFour(headForLine);
+    node->wordHead = headForLine;
     guidWord = strtok(line, " \t");
-
-    printf("pancake\n");
     if(!strcmp(guidWord, ".string"))
     {
         int i;
@@ -415,20 +429,25 @@ LINE *toBinaryGuidance(char line[])
             addWord(headForLine, charToBinary(*(param + i)));
     }else{
         int count = 1;
+        param = strtok(NULL, ",");
         while(param != NULL)
         {
-            int *paramInBinary, i, num, k = 1;
-            WORD *link = NULL;
-            param = strtok(NULL, ",");
+            int *paramInBinary, i, num = 0, k = 1;
+            WORD *link;
+            trimTrailing(param);
+            /*firstFour(link);*/
             for(i = strlen(param)-1; i >= 0; i--)
             {
-                if(*(param + i) == '-')
+                printf("param I  = %c\n", param[i]);
+                if(param[i] == '-')
                     num = num * (-1);
-                else if(isdigit(*param + i)){
-                    num = num + (*(param + i) * k);
-                    k = k * 10;
+                else if(isdigit(param[i])){
+                    num += ( param[i] * k);
+                    k *= 10;
+                    printf("num = %d, k = %d\n", num, k);
                 }
             }
+            printf("num=%d\n", num);
             paramInBinary = decToBinary(num);
             link->word[18] = 1;
             for(i = 0; i < 16; i++)
@@ -439,6 +458,7 @@ LINE *toBinaryGuidance(char line[])
                 addWord(headForLine, link);
             count++;
             DC++;
+            param = strtok(NULL, ", ");
         }
     }
     return node;
@@ -447,6 +467,7 @@ LINE *toBinaryGuidance(char line[])
 WORD *extraWordsToBinary(char *param)
 {
     WORD *link = NULL;
+    firstFour(link);
     if(isNum(param))
     {
         int *numInBinary, i , num, k = 1;
@@ -472,14 +493,15 @@ WORD *extraWordsToBinary(char *param)
 
 WORD *charToBinary(char ch)
 {
-    WORD *link = NULL;
-    int charInAscii = ch, *charInBinary, i;
-    link->word[18] = 1;
-    charInBinary = decToBinary(charInAscii);
-    for(i = 0; i < 16; i++)
-        link->word[i] = *(charInBinary);
-    DC++;
-    return link;
+  WORD *link = NULL;
+  int charInAscii = ch, *charInBinary, i;
+  firstFour(link);
+  link->word[18] = 1;
+  charInBinary = decToBinary(charInAscii);
+  for(i = 0; i < 16; i++)
+      link->word[i] = *(charInBinary + i);
+  DC++;
+  return link;
 
 }
 
@@ -558,7 +580,7 @@ int *decToBinary(int num){
 
     if( num >= 0 ){
         for(i = 0 ; i < 16 ; i ++){    
-            array[i] = num%2;    
+            *(array + i) = num%2;    
             num = num/2;    
         }  
         return array;
@@ -567,21 +589,29 @@ int *decToBinary(int num){
     num = (~num);
 
     for(i = 0 ; i < 16 ; i ++){    
-        array[i] = num%2;    
+        *(array + i) = num%2;    
         num = num/2;    
     }
 
     for(i = 0 ; i < 16 ; i ++){    
-        if( array[i] == 1 )
-            array[i] = 0;
-        else if( !array[i] )
-            array[i] = 1;
+        if( *(array + i) == 1 )
+            *(array + i) = 0;
+        else if( !*(array + i) )
+            *(array + i) = 1;
     }  
 
     return array;
 }
 
+void firstFour(WORD * ourWord){
+  ourWord->word[19] = 0;
+  ourWord->word[18] = 0;
+  ourWord->word[17] = 0;
+  ourWord->word[16] = 0;
+}
+
 int main(){
+
     LINE *headOfFile = NULL;
     WORD *link;
     FILE *fptr;
@@ -590,27 +620,27 @@ int main(){
     fptr = fopen("t.txt", "r");
 
     head = symboleTableCreat(fptr);
-    printf("BOOM\n");
     fclose(fptr);
     ff = fopen("t.txt", "r");
-    /*fseek(fptr, 0, SEEK_SET);*/
+    
     headOfFile = firstPass( ff, head );
     
     if( headOfFile != NULL )
       link = headOfFile->wordHead;
 
-    while(headOfFile != NULL)
+    /*while(headOfFile != NULL)
     {
         int i;
         while(link != NULL)
         {
         for(i = 0; i < 20; i++)
         {
-            printf("\t%d\t\n", link->word[i]);
+            printf("\t%d\t", link->word[i]);
         }
         link = link->next;
         }
+        printf("\n");
         headOfFile = headOfFile->next;
-    }
+    }*/
     return 1;
 }
