@@ -83,7 +83,7 @@ symbolLink *symboleTableCreat(FILE *filePointer)
 {
     char line[81];
     char *token;
-    symbolLink *head;
+    symbolLink *head = NULL;
     symbolLink *lableFound;
     while (fgets(line, 81, filePointer))
     {       
@@ -100,7 +100,6 @@ symbolLink *symboleTableCreat(FILE *filePointer)
         } else if(!strcmp(token, ".entry"))
         {          
             token = strtok(NULL, CUT);
-            printf("token is->%s@\n", token);
             lableFound = findSymbol(head, token);
             if(lableFound == NULL)
             {
@@ -115,9 +114,11 @@ symbolLink *symboleTableCreat(FILE *filePointer)
 
 symbolLink *addSymbol(symbolLink *head, char lableName[])
 {
-    struct symbolLink *link = (struct symbolLink *)malloc(sizeof(struct symbolLink));
-    printf("lable name is->%s@", lableName);
+    struct symbolLink *link = (struct symbolLink *) malloc (sizeof(struct symbolLink));
     strcpy(link->name, lableName);
+    if( head == NULL ){
+      return link;
+    }
     link->next = head;
     head = link;
     return head;
@@ -128,17 +129,15 @@ struct symbolLink *findSymbol(struct symbolLink *head, char lableName[]) {
     if(head == NULL)
         return NULL;
     while(current != NULL) 
-    {
-        printf("current name->%s@\nlable name->%s@\n", current->name, lableName);
+    {   
         if(!strcmp(current->name, lableName))
         {
-            printf("burger\n");
-            return current;
+          return current;
         }
-        else 
-            current = current->next;
+        else{
+          current = current->next;
+        }
     }
-     printf("burger2\n");
     return NULL;
 }
 
@@ -585,11 +584,11 @@ int main(){
     fptr = fopen("t.txt", "r");
     
     head = symboleTableCreat(fptr);
+    printf("BOOM\n");
     fseek(fptr, 0, SEEK_SET);
     headOfFile = firstPass( fptr, head );
 
     link = headOfFile->wordHead;
-    printf("BOOM\n");
 
     while(headOfFile != NULL)
     {
