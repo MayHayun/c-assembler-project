@@ -420,13 +420,13 @@ LINE *toBinaryGuidance(char line[])
     guidWord = strtok(line, " \t");
     if(!strcmp(guidWord, ".string"))
     {
-        int i;
-        param = strtok(NULL, "\"");
-        param = strtok(NULL, "\"");
-        headForLine = charToBinary(*(param));
-        node->wordHead = headForLine;
-        for(i = 1; i < strlen(param); i++)
-            addWord(headForLine, charToBinary(*(param + i)));
+      int i;
+      param = strtok(NULL, "\"");
+      param = strtok(NULL, "\"");
+      headForLine = charToBinary(*(param));
+      node->wordHead = headForLine;
+      for(i = 1; i < strlen(param); i++)
+        addWord(headForLine, charToBinary(*(param + i)));
     }else{
         int count = 1;
         param = strtok(NULL, ",");
