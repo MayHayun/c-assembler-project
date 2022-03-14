@@ -3,7 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#define CUT "\t ,"
+#define CUT "\t ,\n"
 #define CUTme " :\t"
 
 int IC = 100;
@@ -51,7 +51,6 @@ typedef struct LINE
     struct LINE *next;
 }LINE;
 
-
 typedef struct symbolLink
 {
 	char name[31];
@@ -83,25 +82,29 @@ int * decToBinary(int num);
 symbolLink *symboleTableCreat(FILE *filePointer)
 {
     char line[81];
-    char *lableName;
+    char *token;
     symbolLink *head;
     symbolLink *lableFound;
     while (fgets(line, 81, filePointer))
-    {
-        lableName = strtok(line, CUT);
-        if(lableName[strlen(lableName)-1] == ':')
-            head = addSymbol(head, lableName);
-        else if(!strcmp(lableName, ".extern"))
+    {       
+        token = strtok(line, CUT);
+        if(token[strlen(token)-1] == ':')
         {
-            lableName = strtok(NULL, CUT);
-            head = addSymbol(head, lableName);
+            head = addSymbol(head, token);
+        }
+        else if(!strcmp(token, ".extern"))
+        {
+            token = strtok(NULL, CUT);
+            head = addSymbol(head, token);
             head->visibility = 2;
-        } else if(!strcmp(lableName, ".entry"))
-        {
-            lableFound = findSymbol(head, lableName);
+        } else if(!strcmp(token, ".entry"))
+        {          
+            token = strtok(NULL, CUT);
+            printf("token is->%s@\n", token);
+            lableFound = findSymbol(head, token);
             if(lableFound == NULL)
             {
-                head = addSymbol(head, lableName);
+                head = addSymbol(head, token);
                 head->visibility = 1;
             }else
                 lableFound->visibility = 1;
@@ -113,6 +116,7 @@ symbolLink *symboleTableCreat(FILE *filePointer)
 symbolLink *addSymbol(symbolLink *head, char lableName[])
 {
     struct symbolLink *link = (struct symbolLink *)malloc(sizeof(struct symbolLink));
+    printf("lable name is->%s@", lableName);
     strcpy(link->name, lableName);
     link->next = head;
     head = link;
@@ -123,13 +127,19 @@ struct symbolLink *findSymbol(struct symbolLink *head, char lableName[]) {
     struct symbolLink* current = head;
     if(head == NULL)
         return NULL;
-   while(current != NULL) {
+    while(current != NULL) 
+    {
+        printf("current name->%s@\nlable name->%s@\n", current->name, lableName);
         if(!strcmp(current->name, lableName))
+        {
+            printf("burger\n");
             return current;
+        }
         else 
-         current = current->next;
-   }
-   return NULL;
+            current = current->next;
+    }
+     printf("burger2\n");
+    return NULL;
 }
 
 int isACommand(char line[] ){
@@ -167,7 +177,6 @@ int isACommand(char line[] ){
     return 1;
   return 0;
 }
-
 
 commandsStruct *findCommand(char * command)
 {
@@ -322,7 +331,6 @@ LINE *toBinaryCommand(char line[], symbolLink *headOfTable)
     return node;
 }
 
-
 LINE *firstPass(FILE *filePointer, symbolLink *headOfTable)
 {
     char line[81];
@@ -338,9 +346,7 @@ LINE *firstPass(FILE *filePointer, symbolLink *headOfTable)
         strcpy(lineCopy, line);
         token = strtok(line, CUTme);
 
-        printf("token is stam @@@ $$$$ @@@@"); 
-        printf("hakuna matata"); 
-
+        printf("in while");
         if((lable = findSymbol(headOfTable, token)) != NULL){
             char *tokenCopy = NULL;
             lable->adress = IC;
@@ -366,6 +372,7 @@ LINE *firstPass(FILE *filePointer, symbolLink *headOfTable)
             lable = findSymbol(headOfTable, token);
             lable->visibility = 2;
         }else if(!strcmp(token, ".entry")){
+            printf("in if");
             token = strtok(NULL, CUT);
             lable = findSymbol(headOfTable, token);
             lable->visibility = 1;
@@ -386,10 +393,9 @@ LINE *firstPass(FILE *filePointer, symbolLink *headOfTable)
     return headOfFile;
 }
 
-
 LINE *toBinaryGuidance(char line[])
 {
-    char *guidWord, *param;
+    char *guidWord = NULL, *param = NULL;
     WORD *headForLine;
     LINE *node = NULL;
     node->wordHead = NULL;
@@ -433,8 +439,6 @@ LINE *toBinaryGuidance(char line[])
     }
     return node;
 }
-
-  
 
 WORD *extraWordsToBinary(char *param)
 {
@@ -574,35 +578,31 @@ int *decToBinary(int num){
 }
 
 int main(){
-  LINE *headOfFile;
-  WORD *link = NULL;
-  FILE *fptr;
-  symbolLink *head;
+    LINE *headOfFile;
+    WORD *link;
+    FILE *fptr;
+    symbolLink *head;
+    fptr = fopen("t.txt", "r");
+    
+    head = symboleTableCreat(fptr);
+    fseek(fptr, 0, SEEK_SET);
+    headOfFile = firstPass( fptr, head );
 
-  fptr = fopen("t.text", "r");
-  
-  if( fptr == NULL )
-    printf("not the MAY :(\n");
+    link = headOfFile->wordHead;
+    printf("BOOM\n");
 
-  head = symboleTableCreat(fptr);
-  headOfFile = firstPass( fptr, head );
-
-
-  link = headOfFile->wordHead;
-  printf("BOOM\n");
-
-  while(headOfFile != NULL)
-  {
-    int i;
-    while(link != NULL)
+    while(headOfFile != NULL)
     {
-      for(i = 0; i < 20; i++)
-      {
-        printf("\t%d\t\n", link->word[i]);
-      }
-      link = link->next;
+        int i;
+        while(link != NULL)
+        {
+        for(i = 0; i < 20; i++)
+        {
+            printf("\t%d\t\n", link->word[i]);
+        }
+        link = link->next;
+        }
+        headOfFile = headOfFile->next;
     }
-    headOfFile = headOfFile->next;
-  }
-  return 1;
+    return 1;
 }
