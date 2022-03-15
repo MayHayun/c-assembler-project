@@ -64,20 +64,18 @@ typedef struct symbolLink
 symbolLink * symboleTableCreat(FILE *filePointer);
 symbolLink *addSymbol(symbolLink *head, char lableName[]);
 struct symbolLink* findSymbol(struct symbolLink *head, char lableName[]);
-
 char *cutWhiteChars(char *str);
-
-LINE *firstPass(FILE *filePointer, symbolLink *headOfTable);
-LINE *toBinaryCommand(char line[], symbolLink *headOfTable);
-LINE *toBinaryGuidance(char line[]);
-WORD *extraWordsToBinary(char *param);
+void firstFour(WORD * ourWord);
+WORD *firstPass(FILE *filePointer, symbolLink *headOfTable);
+void toBinaryCommand(char line[], symbolLink *headOfTable, WORD *headOfFile);
+void toBinaryGuidance(char line[], WORD *headOfFile);
+void extraWordsToBinary(char *param, WORD *headOfFile);
 WORD *charToBinary(char ch);
-void addLine(LINE *head, LINE *link);
 void addWord(WORD *head, WORD *link);
 int isNum(char *str);
 int extractRegister(char * param);
 int isARegister(char line []);
-int * decToBinary(int num);
+int *decToBinary(int num);
 
 void trimTrailing(char * str){
     int index = -1;
@@ -206,86 +204,88 @@ commandsStruct *findCommand(char * command)
 
 }
 
-WORD *deliveryForBinary(commandsStruct *command ,char myStr[], symbolLink *headOfTable)
+void deliveryForBinary(commandsStruct *command ,char myStr[], symbolLink *headOfTable, WORD *headOfFile)
 { 
     int isDest = 1;
     int i, j;
     char* token; 
-    WORD* link = NULL; 
+    WORD* link =(struct WORD*)malloc(sizeof(struct WORD)); 
     token = strtok(myStr, ", \t\n");
     firstFour(link);
+    link->next = NULL;
     link->word[18] = 1;
     if(command->funct != 0)
     {
-        int *functInBin;
-        functInBin = decToBinary(command->funct);
-        for(i = 12, j = 0; i < 16; i++, j++)
-            link->word[i] = functInBin[j];
+      int *functInBin;
+      functInBin = decToBinary(command->funct);
+      for(i = 12, j = 0; i < 16; i++, j++)
+        link->word[i] = functInBin[j];
     }
 
     if(command->numOfParam == 0)
-        return link;
-
-    while(token != NULL)
+      addWord(headOfFile, link);
+    else
     {
+      while(token != NULL)
+      {
         /* Delivery 0 */ 
         if( myStr[0] == '#')
         {
-            token = strtok(NULL, ", \t\n");
-            continue;
+          token = strtok(NULL, ", \t\n");
+          continue;
         }
 
         /* Delivery 1 */ 
         else if(findSymbol(headOfTable, myStr) != NULL)
-            if(isDest)
-                link->word[0] = 1;
-            else
-                link->word[6] = 1;
+          if(isDest)
+            link->word[0] = 1;
+          else
+            link->word[6] = 1;
 
         /* Delivery 3 */
         else if(isARegister(cutWhiteChars(token)) != -1)
         {   
-            int *regInBinary;
-            regInBinary = decToBinary(isARegister(token));
-            if(isDest)
-            {
-                for(i = 2, j = 0; i < 6; i++, j++)
-                    link->word[i] = *(regInBinary + j);
-                link->word[0] = 1;
-                link->word[1] = 1;
-            }else
-            {
-                for(i = 8, j = 0; i < 12; i++, j++)
-                    link->word[i] = *(regInBinary + j);
-                link->word[6] = 1;
-                link->word[7] = 1;
-            }
+          int *regInBinary;
+          regInBinary = decToBinary(isARegister(token));
+          if(isDest)
+          {
+            for(i = 2, j = 0; i < 6; i++, j++)
+              link->word[i] = *(regInBinary + j);
+            link->word[0] = 1;
+            link->word[1] = 1;
+          }else
+          {
+            for(i = 8, j = 0; i < 12; i++, j++)
+              link->word[i] = *(regInBinary + j);
+            link->word[6] = 1;
+            link->word[7] = 1;
+          }
         }
-
         /*Delivery 2*/
         else
         {
-            int reg;
-            int *regInBin;
-            reg = extractRegister(token);
-            regInBin = decToBinary(reg);
-            if(isDest)
-            {
-                for(i = 2, j = 0; i < 6; i++, j++)
-                    link->word[i] = *(regInBin + j);
-                link->word[1] = 1;
-            }else
-            {
-                for(i = 8, j = 0; i < 12; i++, j++)
-                    link->word[i] = *(regInBin + j);
-                link->word[7] = 1;
-            }
+          int reg;
+          int *regInBin;
+          reg = extractRegister(token);
+          regInBin = decToBinary(reg);
+          if(isDest)
+          {
+          for(i = 2, j = 0; i < 6; i++, j++)
+            link->word[i] = *(regInBin + j);
+          link->word[1] = 1;
+          }else
+          {
+            for(i = 8, j = 0; i < 12; i++, j++)
+              link->word[i] = *(regInBin + j);
+            link->word[7] = 1;
+          }
         }
         isDest = 0;
         token = strtok(NULL, ",\n");
+      }
     }
     IC++;
-    return link;
+    addWord(headOfFile, link);
 }
 
 char *cutWhiteChars(char *str)
@@ -315,141 +315,106 @@ int move_to_none_white(char *line, int i)
     return i;
 }
 
-LINE *toBinaryCommand(char line[], symbolLink *headOfTable)
+void toBinaryCommand(char line[], symbolLink *headOfTable, WORD *headOfFile)
 {
-    char *command;
-    char *token;
-    WORD *headForLine = (struct WORD*)malloc(sizeof(struct WORD));
-    firstFour(headForLine);
-    LINE *node = NULL;
-    commandsStruct *commandFound;
-    char *restOfString;
-    node->wordHead = NULL;
+    char *command, *token, *restOfString;
+    commandsStruct *commandFound = NULL;
+    WORD *link = (struct WORD*)malloc(sizeof(struct WORD));
+    
+    firstFour(link);
+    link->next = NULL;
 
     command = strtok(line, CUT);
     commandFound = findCommand(command);
-    headForLine->word[commandFound->opcode] = 1;
-    headForLine->word[18] = 1;
+
+    link->word[commandFound->opcode] = 1;
+    link->word[18] = 1;
+    addWord(headOfFile, link);
     IC++;
-    node->wordHead = headForLine;
     restOfString = strtok(NULL, "\n");
 
-    addWord( headForLine, deliveryForBinary(commandFound, restOfString, headOfTable));
+    deliveryForBinary(commandFound, restOfString, headOfTable, headOfFile);
     
     token = strtok(restOfString, ",\n");
-
     while(token != NULL)
     {
-        if(isARegister(cutWhiteChars(token)) == -1)
-            break;
-        addWord(headForLine, extraWordsToBinary(token));
+        /*if(isARegister(token) == -1)
+            break;*/
+        extraWordsToBinary(token, headOfFile);
         token = strtok(NULL, ",\n");
     }
-    return node;
 }
 
-LINE *firstPass(FILE *filePointer, symbolLink *headOfTable)
+WORD *firstPass(FILE *filePointer, symbolLink *headOfTable)
 {
     char line[81];
     char lineCopy[81];
     char *token;
     char *firstWord;
     symbolLink *lable;
-    LINE *headOfFile;
+    WORD *headOfFile = (struct WORD*)malloc(sizeof(struct WORD));
+    headOfFile->next = NULL;
     
     while(fgets(line, 81, filePointer))
     {
-        strcpy(lineCopy, line);
-        token = strtok(line, CUTme);
+      strcpy(lineCopy, line);
+      token = strtok(line, CUTme);
 
-        if((lable = findSymbol(headOfTable, token)) != NULL){
-            char *tokenCopy = NULL;
-            lable->adress = IC;
-            token = strtok(NULL, "\n");
-            strcpy(tokenCopy, token);
-            firstWord = strtok(token, CUT);
+      if((lable = findSymbol(headOfTable, token)) != NULL){
+        char *tokenCopy = NULL;
+        lable->adress = IC;
+        token = strtok(NULL, "\n");
+        strcpy(tokenCopy, token);
+        firstWord = strtok(token, CUT);
 
-            if(isACommand(cutWhiteChars(firstWord)))
-                if(IC == 100){	    
-                    headOfFile = toBinaryCommand(tokenCopy, headOfTable);
-		}
-                else
-                    addLine(headOfFile, toBinaryCommand(tokenCopy, headOfTable));
-            else
-                if(IC == 100){
-                    
-                    headOfFile = toBinaryGuidance(tokenCopy);
-                  }
-                else
-                    addLine(headOfFile, toBinaryGuidance(tokenCopy));
-        }else if(!strcmp(token, ".extern")){
-            token = strtok(NULL, CUT);
-            lable = findSymbol(headOfTable, token);
-            lable->visibility = 2;
-
-        }else if(!strcmp(token, ".entry")){
-            token = strtok(NULL, CUT);
-            lable = findSymbol(headOfTable, token);
-            lable->visibility = 1;
-
-        } else if(isACommand(cutWhiteChars(token)))
-            if(IC == 100){
-              
-              headOfFile = toBinaryCommand(lineCopy, headOfTable);
-            }
-            else
-              addLine(headOfFile, toBinaryCommand(lineCopy, headOfTable));
+        if(isACommand(cutWhiteChars(firstWord)))
+          toBinaryCommand(tokenCopy, headOfTable, headOfFile);
         else
-          if(IC == 100){
-            printf("oga boga\n");
-            headOfFile->wordHead = toBinaryGuidance(lineCopy)->wordHead;
-            printf("watermelon\n");
-
-          }
-          else
-            addLine(headOfFile, toBinaryGuidance(lineCopy));
+          toBinaryGuidance(tokenCopy, headOfFile);
+      }else if(!strcmp(token, ".extern"))
+      {
+        token = strtok(NULL, CUT);
+        lable = findSymbol(headOfTable, token);
+        lable->visibility = 2;
+      }else if(!strcmp(token, ".entry"))
+      {
+        token = strtok(NULL, CUT);
+        lable = findSymbol(headOfTable, token);
+        lable->visibility = 1;
+      }else if(isACommand(cutWhiteChars(token)))
+        toBinaryCommand(lineCopy, headOfTable, headOfFile);
+      else
+        toBinaryGuidance(lineCopy, headOfFile);
     }
-    
     return headOfFile;
 }
 
-LINE *toBinaryGuidance(char line[])
+void toBinaryGuidance(char line[], WORD *headOfFile)
 {
     char *guidWord, *param = NULL;
-    WORD *headForLine;
-    LINE *node;
-
-    firstFour(headForLine);
-    node->wordHead = headForLine;
     guidWord = strtok(line, " \t");
     if(!strcmp(guidWord, ".string"))
     {
       int i;
       param = strtok(NULL, "\"");
-      param = strtok(NULL, "\"");
-      headForLine = charToBinary(*(param));
-      node->wordHead = headForLine;
-      for(i = 1; i < strlen(param); i++)
-        addWord(headForLine, charToBinary(*(param + i)));
+      for(i = 0; i < strlen(param); i++)
+        addWord(headOfFile, charToBinary(*(param + i)));
+      addWord(headOfFile, charToBinary('\0'));
     }else{
-      int count = 1;
       param = strtok(NULL, ",");
       while( param != NULL)
       {
-        int *paramInBinary, i, num = 0, k = 1, x;
-        WORD *link;
+        WORD *link = (struct WORD*)malloc(sizeof(struct WORD));
+        int *paramInBinary, i, num = 0, k = 1;
         trimTrailing(param);
-
-        /*firstFour(link);*/
+        firstFour(link);
         for(i = strlen(param)-1; i >= 0; i--)
         {
-          printf("param I  = %c\n", param[i]);
-
           if(param[i] == '-')
               num = num * (-1);
 
           else if( isdigit(param[i]) ){
-            num += ( (param[i] - 48) * k);
+            num += (param[i] - 48) * k;
             k *= 10;
           }
         }
@@ -457,49 +422,45 @@ LINE *toBinaryGuidance(char line[])
         link->word[18] = 1;
         for(i = 0; i < 16; i++)
           link->word[i] = *(paramInBinary + i);
-        
-        if(count)
-          headForLine = link;
-        else
-          addWord(headForLine, link);
-        count++;
+        addWord(headOfFile, link);
         DC++;
+        IC++;
         param = strtok(NULL, ", \n");
       }
     }
-    return node;
 }
 
-WORD *extraWordsToBinary(char *param)
+void extraWordsToBinary(char *param, WORD *headOfFile)
 {
-    WORD *link = NULL;
+    WORD *link = (struct WORD*)malloc(sizeof(struct WORD));
     firstFour(link);
+    link->next = NULL;
+
     if(isNum(param))
     {
-        int *numInBinary, i , num, k = 1;
-        for(i = strlen(param)-1; i >= 0; i--)
-        {
-                if(*(param + i) == '-')
-                    num = num * (-1);
-                else{
-                    num = num + (*(param + i) * k);
-                    k = k * 10;
-                }
+      int *numInBinary, i , num, k = 1;
+      for(i = strlen(param)-1; i >= 0; i--)
+      {
+        if(*(param + i) == '-')
+          num = num * (-1);
+        else{
+          num = num + (*(param + i) * k);
+          k = k * 10;
         }
-        numInBinary = decToBinary(num);
-        for(i = 0; i < 16; i++)
-            link->word[i] = *(numInBinary + i);
-        link->word[18] = 1;
-        IC++;
-        return link;
+      }
+      numInBinary = decToBinary(num);
+      for(i = 0; i < 16; i++)
+        link->word[i] = *(numInBinary + i);
+      link->word[18] = 1;
+      IC++;
+      addWord(headOfFile, link);
     }else
-        IC = IC + 2;
-    return NULL;
+      IC = IC + 2;
 }
 
 WORD *charToBinary(char ch)
 {
-  WORD *link = NULL;
+  WORD *link =(struct WORD*)malloc(sizeof(struct WORD));
   int charInAscii = ch, *charInBinary, i;
   firstFour(link);
   link->word[18] = 1;
@@ -507,32 +468,25 @@ WORD *charToBinary(char ch)
   for(i = 0; i < 16; i++)
       link->word[i] = *(charInBinary + i);
   DC++;
+  link->next = NULL;
   return link;
-
-}
-
-void addLine(LINE *head, LINE *link)
-{
-    while(head->next != NULL)
-        head = head->next;
-    head->next = link;
-    link->next = NULL;
 }
 
 void addWord(WORD *head, WORD *link)
 {
     while(head->next != NULL)
         head = head->next;
-
     head->next = link;
     link->next = NULL;
 }
 
 int isNum(char *str)
 {
-    if(*str == '#')
-        return 1;
-    return 0;
+    int i = 0;
+    for(; i < strlen(str); i++ )
+      if(!isdigit(*(str + i)) && str[i] != '#' && str[i] != '-' && str[i] != '+' && !isspace(str[i]))
+        return 0;
+    return 1;
 }
 
 int extractRegister(char * param)
@@ -618,11 +572,11 @@ void firstFour(WORD * ourWord){
 
 int main(){
 
-    LINE *headOfFile = NULL;
-    WORD *link;
+    WORD *headOfFile = NULL;
     FILE *fptr;
     FILE *ff;
     symbolLink *head;
+    int lines = 1;
     fptr = fopen("t.txt", "r");
 
     head = symboleTableCreat(fptr);
@@ -630,22 +584,18 @@ int main(){
     ff = fopen("t.txt", "r");
     
     headOfFile = firstPass( ff, head );
-    
-    if( headOfFile != NULL )
-      link = headOfFile->wordHead;
+    headOfFile = headOfFile->next;
 
-    while(headOfFile != NULL)
+   while(headOfFile != NULL)
     {
         int i;
-        while(link != NULL)
+        printf("line %d -> ", lines);
+        for(i = 19; i >= 0; i--)
         {
-        for(i = 0; i < 20; i++)
-        {
-            printf("\t%d\t", link->word[i]);
-        }
-        link = link->next;
+            printf("%d\t",headOfFile->word[i]);
         }
         printf("\n");
+        lines++;
         headOfFile = headOfFile->next;
     }
     return 1;
