@@ -354,6 +354,7 @@ WORD *firstPass(FILE *filePointer, symbolLink *headOfTable)
       if((lable = findSymbol(headOfTable, token)) != NULL){
         char *tokenCopy = (char *)malloc(81);
         lable->adress = IC;
+        printf("lable adress is:%d\n", lable->adress);
         token = strtok(NULL, "\n");
         strcpy(tokenCopy, token);
         firstWord = strtok(token, CUT);
@@ -568,11 +569,73 @@ void firstFour(WORD * ourWord){
   ourWord->word[16] = 0;
 }
 
+int allZero(WORD *link)
+{
+  int i;
+  for( i = 16; i < 20; i++)
+    if(link->word[i] != 0)
+      return 0;
+  return 1;
+}
+
+void changeWord(WORD *headOfFile, symbolLink *symbolFound, int counter)
+{
+  int i;
+  int count = 0;;
+  for(i = 0; count <= counter*2 && i < IC; i++)
+  {
+    headOfFile = headOfFile->next;
+    if(allZero(headOfFile))
+    count++;
+  }
+  if(symbolFound->visibility == 2)
+  {
+    headOfFile->word[16] = 1;
+    headOfFile->next->word[16] = 1;
+  } else
+  {
+    int offset = symbolFound->adress % 16;
+    int base = symbolFound->adress - offset;
+    int *offsetInBin, *baseInBin;
+    headOfFile->word[17] = 1;
+    headOfFile->next->word[17] = 1;
+    baseInBin = decToBinary(base);
+    for(i = 0; i < 16; i++)
+      headOfFile->word[i] = *(baseInBin + i);
+    offsetInBin = decToBinary(offset);
+    for(i = 0; i < 16; i++)
+      headOfFile->next->word[i] = *(offsetInBin + i);
+  }
+}
+
+void secondPass(FILE *filePointer, WORD *headOfFile, symbolLink *headOfTable)
+{
+  char line[81];
+  char *token;
+  int counter = 0;
+  symbolLink *symbolFound = NULL;
+  while(fgets(line, 81, filePointer))
+  {
+    token = strtok(line, " \t,");
+    printf("all good2\n");
+    if(isACommand(token))
+    {
+      printf("all good3\n");
+      token = strtok(NULL, " \t,");
+      if((symbolFound = findSymbol(headOfTable, token)) != NULL)
+      {
+        changeWord(headOfFile, symbolFound, counter);
+        counter++;
+      }
+    }
+  }
+}
+
 int main(){
 
     WORD *headOfFile = NULL;
     FILE *fptr;
-    FILE *ff;
+    FILE *ff, *fp;
     symbolLink *head;
     int k, j;
     int bla[20];
@@ -584,6 +647,12 @@ int main(){
     ff = fopen("t.txt", "r");
     
     headOfFile = firstPass( ff, head );
+    fclose(ff);
+
+    fp = fopen("t.txt", "r");
+
+    secondPass(fp, headOfFile, head);
+
     headOfFile = headOfFile->next;
     for(k = 19, j = 0; k >= 0; k--, j++)
       bla[k] = j;
