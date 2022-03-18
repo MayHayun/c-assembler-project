@@ -464,13 +464,6 @@ void toBinaryCommand(char line[], symbolLink *headOfTable, WORD *headOfFile)
       if(!(*(cutWhiteChars(temp)) == 'r' && isARegister(cutWhiteChars(temp)) != -1))
           extraWordsToBinary(cutWhiteChars(temp), headOfFile, headOfTable);
     }
-    /*while(token != NULL)
-    {
-        if(!(*(cutWhiteChars(token)) == 'r' && isARegister(cutWhiteChars(token)) != -1))
-          extraWordsToBinary(cutWhiteChars(token), headOfFile);
-        token = strtok(NULL, "\n\t\0 ");
-        printf("token is in while->%s@\n", token);
-    }*/
 }
 
 WORD *firstPass(FILE *filePointer, symbolLink *headOfTable)
@@ -701,16 +694,16 @@ int *decToBinary(int num){
 int allZero(WORD *link)
 {
   int i;
-  for( i = 0; i < 20; i++)
+  for( i = 0; i < 20; i++){
     if(link->word[i] != 0)
       return 0;
+  }
   return 1;
 }
 
 void changeWord(WORD *headOfFile, symbolLink *symbolFound)
 {
   int i;
-
   WORD *current = headOfFile->next;
   while(current !=NULL)
   {
@@ -718,27 +711,14 @@ void changeWord(WORD *headOfFile, symbolLink *symbolFound)
     {
       if(symbolFound->ext == 1)
       {
-      printf("in extern->%s\n", symbolFound->name);
       current->word[16] = 1;
       current->next->word[16] = 1;
-      } else if(symbolFound->ent == 1)
-
-  while(headOfFile !=NULL)
-  {
-    if(allZero(headOfFile))
-    {
-      if(symbolFound->visibility == 2)
-      {
-      headOfFile->word[16] = 1;
-      headOfFile->next->word[16] = 1;
-      } else
-
+      } else if(symbolFound->ent == 1 || symbolFound->ent == 2)
       {
       int offset = symbolFound->adress % 16;
       int base = symbolFound->adress - offset;
       int *offsetInBin, *baseInBin;
 
-      printf("in entry\n");
       current->word[17] = 1;
       current->next->word[17] = 1;
       baseInBin = decToBinary(base);
@@ -751,21 +731,9 @@ void changeWord(WORD *headOfFile, symbolLink *symbolFound)
       break;
     }
     current = current->next;
-
-      headOfFile->word[17] = 1;
-      headOfFile->next->word[17] = 1;
-      baseInBin = decToBinary(base);
-      for(i = 0; i < 16; i++)
-        headOfFile->word[i] = *(baseInBin + i);
-      offsetInBin = decToBinary(offset);
-      for(i = 0; i < 16; i++)
-        headOfFile->next->word[i] = *(offsetInBin + i);
-      }
-    }
-    headOfFile = headOfFile->next;
-
   }
 }
+
 
 void secondPass(FILE *filePointer, WORD *headOfFile, symbolLink *headOfTable)
 {
@@ -777,7 +745,6 @@ void secondPass(FILE *filePointer, WORD *headOfFile, symbolLink *headOfTable)
   symbolLink *symbolFound = NULL;
   while(fgets(line, 81, filePointer))
   {
-
     token = strtok(line, ": \t,");
     if(findSymbol(headOfTable, token) != NULL)
       token = strtok(NULL, " \t,");
@@ -787,24 +754,11 @@ void secondPass(FILE *filePointer, WORD *headOfFile, symbolLink *headOfTable)
       numOfParsLeft = cmnd->numOfParam;
       while(numOfParsLeft > 0)
       {
-        printf("command is->%s@\n", cutWhiteChars(token));
         token = strtok(NULL, "[ \t,");
-        printf("token is->%s@\n", cutWhiteChars(token));
         if((symbolFound = findSymbol(headOfTable, cutWhiteChars(token))) != NULL)
           changeWord(headOfFile, symbolFound);
         numOfParsLeft--;
       }
-
-  symbolLink *symbolFound = NULL;
-  while(fgets(line, 81, filePointer))
-  {
-    token = strtok(line, " \t,");
-    if(isACommand(token))
-    {
-      token = strtok(NULL, " \t,");
-      if((symbolFound = findSymbol(headOfTable, token)) != NULL)
-        changeWord(headOfFile, symbolFound);
-
     }
   }
 }
