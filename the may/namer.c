@@ -4,6 +4,8 @@
 #include <ctype.h>
 
 #define CUT "\t ,\n"
+#define binToHex_H
+
 
 int IC = 100;
 int DC = 0;
@@ -49,7 +51,8 @@ typedef struct symbolLink
 	char name[31];
 	int adress;
 	int placing; /* 0-code image, 1-data image */
-	int visibility; /* 0-internal, 1-entry, 2-extern */
+	int ext; 
+  int ent;/* 0-internal, 1-entry, 2-extern */
 	struct symbolLink *next;
 
 }symbolLink;
@@ -77,6 +80,95 @@ int move_to_none_white(char *line, int i);
 int allZero(WORD *link);
 void changeWord(WORD *headOfFile, symbolLink *symbolFound);
 void secondPass(FILE *filePointer, WORD *headOfFile, symbolLink *headOfTable);
+
+void binToSpecial (int num [],int address,FILE* output);
+char binToHex(int num []);
+void output(WORD *head);
+
+void output(WORD *head){
+  int address = 100;
+  FILE *output;
+  WORD *ptr = head;
+  output = fopen("output.ob","w");
+  fprintf(output,"\t%d\t%d\n",IC-100-DC,DC);
+  while(ptr != NULL && address <= IC){
+    binToSpecial(ptr->word,address,output);
+    ptr = ptr->next;
+    address++;
+  }
+}
+
+void binToSpecial (int num [],int address,FILE* output){
+  int num1 [] = {0,0,0,0};
+  int num2 [] = {0,0,0,0};
+  int num3 [] = {0,0,0,0};
+  int num4 [] = {0,0,0,0};
+  int num5 [] = {0,0,0,0};
+  int i,j;
+  char a, b, c, d, e;
+  int count = 0;
+  for(i=0; i<5; i++){
+    for(j=0;j<4;j++){
+      if(i == 0)
+        num1[j] = num[count];
+      else if(i == 1)
+        num2[j] = num[count];
+      else if(i == 2)
+        num3[j] = num[count];
+      else if(i == 3)
+        num4[j] = num[count];
+      else if(i == 4)
+        num5[j] = num[count];
+      count++;
+    }
+  }
+  a = binToHex(num1);
+  b = binToHex(num2);
+  c = binToHex(num3);
+  d = binToHex(num4);
+  e = binToHex(num5);
+  if(address < 1000)
+    fprintf(output, "0%d\tA%c-B%c-C%c-D%c-E%c\n", address, e, d, c, b, a);
+  else{
+    fprintf(output, "%d\tA%c-B%c-C%c-D%c-E%c\n", address, e, d, c, b, a);
+  }
+}
+
+char binToHex(int num []){
+  if(num[3] == 0 && num[2] == 0 && num[1] == 0 && num[0] == 0) 
+    return '0';
+  if(num[3] == 0 && num[2] == 0 && num[1] == 0 && num[0] == 1)
+    return '1';
+  if(num[3] == 0 && num[2] == 0 && num[1] == 1 && num[0] == 0)
+    return '2';
+  if(num[3] == 0 && num[2] == 0 && num[1] == 1 && num[0] == 1)
+    return '3';
+  if(num[3] == 0 && num[2] == 1 && num[1] == 0 && num[0] == 0)
+    return '4';
+  if(num[3] == 0 && num[2] == 1 && num[1] == 0 && num[0] == 1)
+    return '5';
+  if(num[3] == 0 && num[2] == 1 && num[1] == 1 && num[0] == 0)
+    return '6';
+  if(num[3] == 0 && num[2] == 1 && num[1] == 1 && num[0] == 1)
+    return '7';
+  if(num[3] == 1 && num[2] == 0 && num[1] == 0 && num[0] == 0)
+    return '8';
+  if(num[3] == 1 && num[2] == 0 && num[1] == 0 && num[0] == 1)
+    return '9';
+  if(num[3] == 1 && num[2] == 0 && num[1] == 1 && num[0] == 0)
+    return 'a';
+  if(num[3] == 1 && num[2] == 0 && num[1] == 1 && num[0] == 1)
+    return 'b';
+  if(num[3] == 1 && num[2] == 1 && num[1] == 0 && num[0] == 0)
+    return 'c';
+  if(num[3] == 1 && num[2] == 1 && num[1] == 0 && num[0] == 1)
+    return 'd';
+  if(num[3] == 1 && num[2] == 1 && num[1] == 1 && num[0] == 0)
+    return 'e';
+  if(num[3] == 1 && num[2] == 1 && num[1] == 1 && num[0] == 1)
+    return 'f';
+  return '\0';
+}
 
 void zeroMe(int word[])
 {
@@ -120,7 +212,8 @@ symbolLink *symboleTableCreat(FILE *filePointer)
         {
             token = strtok(NULL, CUT);
             head = addSymbol(head, token);
-            head->visibility = 2;
+            head->ext = 1;
+            head->ent = 0;
         } else if(!strcmp(token, ".entry"))
         {          
             token = strtok(NULL, CUT);
@@ -128,9 +221,7 @@ symbolLink *symboleTableCreat(FILE *filePointer)
             if(lableFound == NULL)
             {
                 head = addSymbol(head, token);
-                head->visibility = 1;
-            }else
-                lableFound->visibility = 1;
+            }
         }
     }
     return head;
@@ -144,6 +235,7 @@ symbolLink *addSymbol(symbolLink *head, char lableName[])
       link->next = NULL;
       return link;
     }
+    link->ent = 1;
     link->next = head;
     head = link;
     return head;
@@ -410,12 +502,13 @@ WORD *firstPass(FILE *filePointer, symbolLink *headOfTable)
       {
         token = strtok(NULL, CUT);
         lable = findSymbol(headOfTable, token);
-        lable->visibility = 2;
+        lable->ext = 1;
+        lable->ent = 0;
       }else if(!strcmp(token, ".entry"))
       {
         token = strtok(NULL, CUT);
         lable = findSymbol(headOfTable, token);
-        lable->visibility = 1;
+        lable->ent = 1;
       }else if(isACommand(cutWhiteChars(token)))
         toBinaryCommand(lineCopy, headOfTable, headOfFile);
       else
@@ -438,6 +531,7 @@ void toBinaryGuidance(char line[], WORD *headOfFile)
         DC++;
       }
       addWord(headOfFile, charToBinary('\0'));
+      DC++;
       
     }else{
       param = strtok(NULL, ",");
@@ -510,7 +604,6 @@ WORD *charToBinary(char ch)
   charInBinary = decToBinary(charInAscii);
   for(i = 0; i < 16; i++)
       link->word[i] = *(charInBinary + i);
-  DC++;
   link->next = NULL;
   return link;
 }
@@ -608,7 +701,7 @@ int *decToBinary(int num){
 int allZero(WORD *link)
 {
   int i;
-  for( i = 16; i < 20; i++)
+  for( i = 0; i < 20; i++)
     if(link->word[i] != 0)
       return 0;
   return 1;
@@ -617,6 +710,19 @@ int allZero(WORD *link)
 void changeWord(WORD *headOfFile, symbolLink *symbolFound)
 {
   int i;
+
+  WORD *current = headOfFile->next;
+  while(current !=NULL)
+  {
+    if(allZero(current))
+    {
+      if(symbolFound->ext == 1)
+      {
+      printf("in extern->%s\n", symbolFound->name);
+      current->word[16] = 1;
+      current->next->word[16] = 1;
+      } else if(symbolFound->ent == 1)
+
   while(headOfFile !=NULL)
   {
     if(allZero(headOfFile))
@@ -626,10 +732,26 @@ void changeWord(WORD *headOfFile, symbolLink *symbolFound)
       headOfFile->word[16] = 1;
       headOfFile->next->word[16] = 1;
       } else
+
       {
       int offset = symbolFound->adress % 16;
       int base = symbolFound->adress - offset;
       int *offsetInBin, *baseInBin;
+
+      printf("in entry\n");
+      current->word[17] = 1;
+      current->next->word[17] = 1;
+      baseInBin = decToBinary(base);
+      for(i = 0; i < 16; i++)
+        current->word[i] = *(baseInBin + i);
+      offsetInBin = decToBinary(offset);
+      for(i = 0; i < 16; i++)
+        current->next->word[i] = *(offsetInBin + i);
+      }
+      break;
+    }
+    current = current->next;
+
       headOfFile->word[17] = 1;
       headOfFile->next->word[17] = 1;
       baseInBin = decToBinary(base);
@@ -641,6 +763,7 @@ void changeWord(WORD *headOfFile, symbolLink *symbolFound)
       }
     }
     headOfFile = headOfFile->next;
+
   }
 }
 
@@ -648,6 +771,30 @@ void secondPass(FILE *filePointer, WORD *headOfFile, symbolLink *headOfTable)
 {
   char line[81];
   char *token;
+
+  int numOfParsLeft;
+  commandsStruct *cmnd;
+  symbolLink *symbolFound = NULL;
+  while(fgets(line, 81, filePointer))
+  {
+
+    token = strtok(line, ": \t,");
+    if(findSymbol(headOfTable, token) != NULL)
+      token = strtok(NULL, " \t,");
+    if(isACommand(cutWhiteChars(token)))
+    {
+      cmnd = findCommand(cutWhiteChars(token));
+      numOfParsLeft = cmnd->numOfParam;
+      while(numOfParsLeft > 0)
+      {
+        printf("command is->%s@\n", cutWhiteChars(token));
+        token = strtok(NULL, "[ \t,");
+        printf("token is->%s@\n", cutWhiteChars(token));
+        if((symbolFound = findSymbol(headOfTable, cutWhiteChars(token))) != NULL)
+          changeWord(headOfFile, symbolFound);
+        numOfParsLeft--;
+      }
+
   symbolLink *symbolFound = NULL;
   while(fgets(line, 81, filePointer))
   {
@@ -657,6 +804,7 @@ void secondPass(FILE *filePointer, WORD *headOfFile, symbolLink *headOfTable)
       token = strtok(NULL, " \t,");
       if((symbolFound = findSymbol(headOfTable, token)) != NULL)
         changeWord(headOfFile, symbolFound);
+
     }
   }
 }
@@ -683,6 +831,7 @@ int main(){
 
     secondPass(fp, headOfFile, head);
     headOfFile = headOfFile->next;
+    output(headOfFile);
     for(k = 19, j = 0; k >= 0; k--, j++)
       bla[k] = j;
     printf("lines b-> ");
