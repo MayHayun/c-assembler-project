@@ -80,6 +80,7 @@ int move_to_none_white(char *line, int i);
 int allZero(WORD *link);
 void changeWord(WORD *headOfFile, symbolLink *symbolFound);
 void secondPass(FILE *filePointer, WORD *headOfFile, symbolLink *headOfTable);
+
 void binToSpecial (int num [],int address,FILE* output);
 char binToHex(int num []);
 void output(WORD *head);
@@ -709,6 +710,7 @@ int allZero(WORD *link)
 void changeWord(WORD *headOfFile, symbolLink *symbolFound)
 {
   int i;
+
   WORD *current = headOfFile->next;
   while(current !=NULL)
   {
@@ -720,10 +722,22 @@ void changeWord(WORD *headOfFile, symbolLink *symbolFound)
       current->word[16] = 1;
       current->next->word[16] = 1;
       } else if(symbolFound->ent == 1)
+
+  while(headOfFile !=NULL)
+  {
+    if(allZero(headOfFile))
+    {
+      if(symbolFound->visibility == 2)
+      {
+      headOfFile->word[16] = 1;
+      headOfFile->next->word[16] = 1;
+      } else
+
       {
       int offset = symbolFound->adress % 16;
       int base = symbolFound->adress - offset;
       int *offsetInBin, *baseInBin;
+
       printf("in entry\n");
       current->word[17] = 1;
       current->next->word[17] = 1;
@@ -737,6 +751,19 @@ void changeWord(WORD *headOfFile, symbolLink *symbolFound)
       break;
     }
     current = current->next;
+
+      headOfFile->word[17] = 1;
+      headOfFile->next->word[17] = 1;
+      baseInBin = decToBinary(base);
+      for(i = 0; i < 16; i++)
+        headOfFile->word[i] = *(baseInBin + i);
+      offsetInBin = decToBinary(offset);
+      for(i = 0; i < 16; i++)
+        headOfFile->next->word[i] = *(offsetInBin + i);
+      }
+    }
+    headOfFile = headOfFile->next;
+
   }
 }
 
@@ -744,6 +771,7 @@ void secondPass(FILE *filePointer, WORD *headOfFile, symbolLink *headOfTable)
 {
   char line[81];
   char *token;
+
   int numOfParsLeft;
   commandsStruct *cmnd;
   symbolLink *symbolFound = NULL;
@@ -766,6 +794,17 @@ void secondPass(FILE *filePointer, WORD *headOfFile, symbolLink *headOfTable)
           changeWord(headOfFile, symbolFound);
         numOfParsLeft--;
       }
+
+  symbolLink *symbolFound = NULL;
+  while(fgets(line, 81, filePointer))
+  {
+    token = strtok(line, " \t,");
+    if(isACommand(token))
+    {
+      token = strtok(NULL, " \t,");
+      if((symbolFound = findSymbol(headOfTable, token)) != NULL)
+        changeWord(headOfFile, symbolFound);
+
     }
   }
 }
